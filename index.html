@@ -1,0 +1,1728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Resinate</title>
+<meta name="description" content="Resinate makes handmade epoxy and UV resin pieces, poured to order. Choose a size, add your own design, colours, sparkle or an LED light, and order online or at our market stall.">
+<meta property="og:title" content="Resinate">
+<meta property="og:description" content="Handmade resin pieces, poured to order. Build yours and order online.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0d6d70">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230d6d70'/%3E%3Cstop offset='1' stop-color='%23b86a07'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M16 3C11 10 7 14.5 7 19.5a9 9 0 0 0 18 0C25 14.5 21 10 16 3z' fill='url(%23g)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+/* Layout: two views on one page. Shop = ocean-pour hero, our work, sizes, add-on chart, builder + cart, checkout. Dashboard (team) = KPIs, charts, to-make list, orders with payments, prices and payment settings */
+:root{
+  --bg:#f2f7f6; --surface:#ffffff; --sunk:#e6efee; --ink:#11282b; --muted:#557074; --line:#cfdfdd;
+  --resin:#0d6d70; --resin-ink:#ffffff; --amber:#b86a07; --amber-soft:#fbecd5;
+  --ok:#2d7a3e; --warn:#a15c00; --bad:#b3261e;
+  --display:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a1719; --surface:#112427; --sunk:#0d1e21; --ink:#e3f0ef; --muted:#93b0b2; --line:#24403f;
+  --resin:#4fc6bd; --resin-ink:#062022; --amber:#f0b04f; --amber-soft:#3a2a12;
+  --ok:#7fd18f; --warn:#f0b04f; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1719; --surface:#112427; --sunk:#0d1e21; --ink:#e3f0ef; --muted:#93b0b2; --line:#24403f;
+  --resin:#4fc6bd; --resin-ink:#062022; --amber:#f0b04f; --amber-soft:#3a2a12;
+  --ok:#7fd18f; --warn:#f0b04f; --bad:#ff8a80; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.08;text-wrap:balance;margin:0}
+h2{font-size:clamp(2rem,4.5vw,2.8rem)}
+h3{font-size:1.5rem}
+p{margin:0}
+.lede{color:var(--muted);max-width:60ch}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--resin)}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+a{color:var(--resin)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:6px}
+
+body:not([data-view="dashboard"]) #dash{display:none}
+.signin{max-width:440px;display:grid;gap:14px}
+.signin form{display:grid;gap:10px}
+.who{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+.contact a{color:inherit}
+body[data-view="dashboard"] #shop{display:none}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-style:italic;font-size:1.75rem;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:10px;margin-right:auto}
+.drop{width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(135deg,var(--resin),var(--amber))}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{text-decoration:none;color:var(--muted);font-weight:500;font-size:.92rem;padding:6px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+nav a:hover{color:var(--ink);background:var(--sunk)}
+nav a.team{color:var(--resin);border:1px solid var(--line)}
+nav a[aria-current="page"]{color:var(--resin-ink);background:var(--resin);border-color:var(--resin)}
+.badge{min-width:20px;height:20px;border-radius:999px;background:var(--amber);color:#1c1204;font-size:.75rem;font-weight:700;display:inline-grid;place-items:center;padding:0 6px;font-variant-numeric:tabular-nums}
+
+section{padding-block:clamp(48px,8vw,88px)}
+section+section{border-top:1px solid var(--line)}
+.head{display:grid;gap:12px;margin-bottom:32px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-block:clamp(40px,7vw,80px)}
+.hero h1{font-size:clamp(2.8rem,7vw,5rem)}
+.hero h1 em{color:var(--resin)}
+.hero .lede{font-size:1.1rem;margin-top:18px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.facts{display:flex;gap:28px;flex-wrap:wrap;margin-top:32px;padding-top:20px;border-top:1px solid var(--line)}
+.facts div{display:grid}
+.facts b{font-family:var(--display);font-weight:400;font-size:1.6rem;line-height:1.1}
+.facts span{color:var(--muted);font-size:.86rem}
+.btn{font:inherit;font-weight:600;border:0;border-radius:999px;padding:12px 22px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--resin);color:var(--resin-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:7px 14px;font-size:.88rem}
+.btn.danger{background:var(--bad);color:var(--surface)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.pour{position:relative;aspect-ratio:1/1;max-width:100%;width:100%}
+.pour canvas{width:100%;height:100%;display:block}
+.from{position:absolute;right:4%;bottom:6%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 10px 30px -18px rgba(0,0,0,.4)}
+.from b{font-size:1.5rem;font-family:var(--display);font-weight:400;color:var(--amber)}
+
+/* gallery */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.gallery figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:grid}
+.gallery img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--sunk)}
+.gallery figcaption{padding:10px 12px;font-size:.9rem;display:flex;gap:8px;justify-content:space-between;align-items:center}
+.upload{border:1px dashed var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;margin-top:14px}
+
+/* sizes */
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.size{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:8px;align-content:start}
+.size .top{display:flex;justify-content:space-between;align-items:flex-end;min-height:80px}
+.size .code{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.size .blob{display:block;border-radius:40% 40% 10px 10px;background:linear-gradient(160deg,color-mix(in srgb,var(--resin) 75%,transparent),color-mix(in srgb,var(--resin) 20%,transparent));border:1px solid color-mix(in srgb,var(--resin) 40%,transparent)}
+.size .price{font-family:var(--display);font-size:2.4rem;line-height:1}
+.size .incl{color:var(--muted);font-size:.9rem}
+
+/* add-on chart */
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+thead th{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--sunk)}
+td.p{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+td .sub{display:block;color:var(--muted);font-size:.86rem;font-weight:400}
+.na{color:var(--muted);font-weight:400}
+.ask{color:var(--warn);font-weight:500}
+.bundle{margin-top:18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--amber-soft);border-radius:var(--r);padding:16px 20px}
+.bundle strong{font-family:var(--display);font-weight:400;font-size:1.4rem}
+.pill{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;display:inline-block}
+.pill.ok{color:var(--ok)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)} .pill.mute{color:var(--muted)}
+
+/* builder */
+.builder{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:20px;min-width:0}
+fieldset{border:0;padding:0;margin:0;display:grid;gap:10px;min-width:0}
+legend{font-weight:600;margin-bottom:8px;padding:0}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.seg label{cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:grid;gap:2px;text-align:center;padding:10px 6px;border:1px solid var(--line);border-radius:10px}
+.seg span small{color:var(--muted);font-variant-numeric:tabular-nums}
+.seg input:checked+span{border-color:var(--resin);background:color-mix(in srgb,var(--resin) 12%,transparent);box-shadow:inset 0 0 0 1px var(--resin)}
+.seg input:focus-visible+span{outline:3px solid var(--amber);outline-offset:2px}
+.opt{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.opt input{margin-top:4px;accent-color:var(--resin);width:18px;height:18px}
+.opt .t{font-weight:600}
+.opt .d{color:var(--muted);font-size:.9rem}
+.opt .c{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.opt.off{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input[type=text],input[type=tel],input[type=search],textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+textarea{min-height:80px;resize:vertical}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.stepper button{font:inherit;border:0;background:var(--sunk);color:var(--ink);width:36px;height:34px;cursor:pointer}
+.stepper button:disabled{opacity:.4;cursor:not-allowed}
+.stepper output{min-width:38px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+.receipt{position:sticky;top:calc(env(safe-area-inset-top,0px) + 84px);background:var(--ink);color:var(--bg);border-radius:var(--r);padding:22px;display:grid;gap:12px}
+.receipt .line{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums;font-size:.95rem}
+.receipt .line span:first-child{opacity:.8}
+.receipt hr{border:0;border-top:1px dashed color-mix(in srgb,var(--bg) 40%,transparent);width:100%;margin:4px 0}
+.receipt .total{font-family:var(--display);font-size:2.6rem;line-height:1}
+.receipt .note{font-size:.86rem;opacity:.8}
+.receipt .btn{background:var(--amber);color:#1c1204}
+.receipt .stepper{border-color:color-mix(in srgb,var(--bg) 30%,transparent)}
+.receipt .stepper button{background:color-mix(in srgb,var(--bg) 15%,transparent);color:var(--bg)}
+.receipt .added{font-size:.9rem;color:var(--bg)}
+.receipt .added a{color:var(--amber);font-weight:600}
+
+/* checkout */
+.po{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.field{display:grid;gap:6px;min-width:0}
+.field label,.field .lbl{font-weight:600;font-size:.92rem}
+.field .hint{color:var(--muted);font-size:.84rem}
+.cart{display:grid;gap:8px}
+.citem{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:var(--sunk);border-radius:10px;padding:10px 12px}
+.citem .spec{font-size:.92rem;min-width:0;overflow-wrap:anywhere}
+.citem .amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.citem button{font:inherit;font-size:.82rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:3px 10px;cursor:pointer}
+.ctotal{display:flex;justify-content:space-between;font-weight:700;font-variant-numeric:tabular-nums;padding:4px 12px}
+.msg{border-radius:10px;padding:12px 14px;font-size:.95rem}
+.msg.ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.msg.err{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.steps{display:grid;gap:14px;counter-reset:s;padding:0;margin:0;list-style:none}
+.steps li{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--mono);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--resin);color:var(--resin-ink);font-size:.85rem}
+.paycard{border:2px solid var(--resin);border-radius:var(--r);padding:20px;display:grid;gap:14px;background:color-mix(in srgb,var(--resin) 6%,var(--surface))}
+.paycard .amount{font-family:var(--display);font-size:2.6rem;line-height:1}
+.kv{display:grid;grid-template-columns:auto 1fr auto;gap:8px 14px;align-items:center;margin:0}
+.kv dt{color:var(--muted);font-size:.9rem}
+.kv dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.copy{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 10px;cursor:pointer}
+
+/* dashboard */
+.dhead{display:flex;gap:16px;align-items:end;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:2px}
+.kpi b{font-family:var(--display);font-weight:400;font-size:2.3rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:.88rem}
+.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-bottom:12px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0;position:relative}
+.chart h3,.tomake h3{font-family:var(--body);font-size:1rem;font-weight:600}
+.chart .sub,.tomake .sub{color:var(--muted);font-size:.85rem;margin-bottom:10px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart svg text{fill:var(--muted);font-family:var(--body);font-size:11px}
+.chart svg .val{fill:var(--ink);font-weight:600}
+.chart svg .grid{stroke:var(--line);stroke-width:1}
+.chart svg .bar{fill:var(--resin)}
+.chart svg .hit{fill:transparent}
+.chart svg g:hover .bar,.chart svg g:focus .bar{fill:color-mix(in srgb,var(--resin) 75%,var(--ink))}
+.chart svg g:focus{outline:none}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:8px;padding:6px 10px;font-size:.85rem;white-space:nowrap;transform:translate(-50%,-110%);z-index:2}
+.tip b{display:block;font-size:1rem;font-variant-numeric:tabular-nums}
+.tomake{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:28px}
+.makegrid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.makegrid div{background:var(--sunk);border-radius:10px;padding:10px 12px;display:grid}
+.makegrid b{font-size:1.4rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.makegrid span{color:var(--muted);font-size:.8rem}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.tools select{width:auto}
+.tools input{max-width:260px}
+.tools .spacer{flex:1}
+.orders{display:grid;gap:10px}
+.order{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:10px 18px}
+.order[data-s="Cancelled"],.order[data-s="Collected"]{opacity:.7}
+.order .ref{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.order .who{font-weight:600}
+.order .spec{color:var(--muted);font-size:.92rem;min-width:0;overflow-wrap:anywhere}
+.order .money{text-align:right;display:grid;gap:4px;justify-items:end;font-variant-numeric:tabular-nums;align-content:start}
+.order .money b{font-size:1.15rem}
+.order .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:10px}
+.order .acts select,.order .acts input{width:auto;padding:6px 10px}
+.order .acts input{width:96px}
+.order .hist{grid-column:1/-1;font-size:.86rem;color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:28px;text-align:center;color:var(--muted)}
+.settings{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.settings.two{grid-template-columns:repeat(2,1fr)}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.notes div{background:var(--sunk);border-radius:12px;padding:14px 16px;font-size:.92rem}
+.notes b{display:block;margin-bottom:4px}
+.dsec{margin-top:40px;display:grid;gap:14px}
+/* about */
+.pitch{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:start}
+.pitch blockquote{margin:0;font-family:var(--display);font-size:clamp(1.6rem,3.4vw,2.2rem);line-height:1.2;color:var(--ink);border-left:3px solid var(--amber);padding-left:20px}
+.pitch .body{display:grid;gap:14px;color:var(--ink)}
+.pitch .body p{max-width:62ch}
+.why{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}
+.why div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:6px;align-content:start}
+.why b{font-family:var(--display);font-weight:400;font-size:1.35rem}
+.why span{color:var(--muted);font-size:.93rem}
+.made{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:40px;counter-reset:m;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.made div{padding:18px;display:grid;gap:6px;align-content:start;border-left:1px solid var(--line)}
+.made div:first-child{border-left:0}
+.made div::before{counter-increment:m;content:"0" counter(m);font-family:var(--mono);font-size:.8rem;color:var(--amber)}
+.made b{font-weight:600}
+.made span{color:var(--muted);font-size:.9rem}
+.uses{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.uses span{border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.92rem;background:var(--surface)}
+.faq{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-top:40px}
+.faq details{border-bottom:1px solid var(--line);padding-block:12px}
+.faq summary{cursor:pointer;font-weight:600}
+.faq p{color:var(--muted);margin-top:8px;max-width:60ch}
+@media (max-width:860px){.pitch,.faq{grid-template-columns:1fr}.why{grid-template-columns:repeat(2,1fr)}.made{grid-template-columns:1fr}.made div{border-left:0;border-top:1px solid var(--line)}.made div:first-child{border-top:0}}
+@media (max-width:420px){.why{grid-template-columns:1fr}}
+.hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.track{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}
+.track span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.84rem;color:var(--muted)}
+.track span.done{border-color:var(--resin);color:var(--ink);background:color-mix(in srgb,var(--resin) 12%,transparent)}
+.track span.now{background:var(--resin);border-color:var(--resin);color:var(--resin-ink);font-weight:600}
+.recent{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.setup{display:grid;gap:14px;margin-bottom:24px;border:2px solid var(--amber)}
+.setup ol{margin:0;padding-left:1.2em;display:grid;gap:10px}
+.check{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.check li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.check li::before{content:"";width:18px;height:18px;border-radius:50%;border:2px solid var(--line);margin-top:3px}
+.check li.ok::before{background:var(--ok);border-color:var(--ok)}
+.code{font-family:var(--mono);font-size:.82rem;background:var(--sunk);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
+.team{display:grid;gap:8px}
+.team .mem{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--sunk);border-radius:10px;padding:10px 12px}
+.team .mem b{flex:1 1 200px;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.team select{width:auto;padding:6px 10px}
+#teamForm input{width:auto;min-width:0}
+#teamForm select{width:auto}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:.92rem;z-index:20;max-width:calc(100% - 32px)}
+
+footer{border-top:1px solid var(--line);padding-block:28px;color:var(--muted);font-size:.9rem}
+
+@media (max-width:960px){ .makegrid{grid-template-columns:repeat(4,1fr)} .settings{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:860px){
+  .hero,.builder,.po,.charts{grid-template-columns:1fr}
+  .pour{max-width:420px;justify-self:center}
+  .sizes,.kpis{grid-template-columns:repeat(2,1fr)}
+  .notes,.settings.two{grid-template-columns:1fr}
+  .receipt{position:static}
+}
+@media (max-width:420px){.seg{grid-template-columns:repeat(2,1fr)} .order{grid-template-columns:1fr} .order .money{justify-items:start;text-align:left} .settings{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="drop" aria-hidden="true"></span>Resinate</a>
+    <nav aria-label="Sections">
+      <a href="#about">About</a>
+      <a href="#pricing">Prices</a>
+      <a href="#build">Build yours</a>
+      <a href="#checkout">Order &amp; pay <span class="badge" id="cartBadge" hidden>0</span></a>
+      <a href="#track">Track order</a>
+      <a href="#dashboard" class="team" id="dashLink" hidden>Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<div id="shop">
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <p class="eyebrow">Handmade epoxy &amp; UV resin</p>
+      <h1>Poured by hand, <em>made to order.</em></h1>
+      <p class="lede">Pick a size, then make it yours with a printed design, extra colours, sparkle or a built-in LED. Order online or at our market stall and pay by PayID or bank transfer.</p>
+      <div class="cta">
+        <a class="btn" href="#build">Build your piece</a>
+        <a class="btn ghost" href="#pricing">See prices</a>
+      </div>
+      <div class="facts">
+        <div><b>4</b><span>sizes, Small to XL</span></div>
+        <div><b>5</b><span>ways to customise</span></div>
+        <div><b>PayID</b><span>or bank transfer</span></div>
+      </div>
+    </div>
+    <div class="pour">
+      <canvas id="pour" aria-hidden="true"></canvas>
+      <div class="from"><span class="eyebrow">Pieces from</span><br><b class="num" id="fromPrice">$5.99</b></div>
+    </div>
+  </div>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="pitch">
+        <div class="head" style="margin:0">
+          <p class="eyebrow">What is Resinate?</p>
+          <h2>Small-batch resin art, poured for you</h2>
+          <blockquote>A piece of resin that's yours alone: your colours, your design, set in glass-clear resin and poured by hand.</blockquote>
+        </div>
+        <div class="body">
+          <p>Resinate is a small handmade resin studio. We mix epoxy and UV resin, tint it, layer in pigment, sparkle and real inclusions, then let it cure into a solid, glossy piece you can hold up to the light.</p>
+          <p>Nothing sits on a shelf waiting for you. Every piece is poured after you order it, so you choose the size, the colours and the finish. Want your own picture or a 3D design set inside? A wave with real sand at the bottom, or leaves from somewhere that matters to you? That's what we do.</p>
+          <p>Because resin moves while it sets, no two pieces ever come out the same. The swirls, bubbles and shimmer in yours won't exist anywhere else.</p>
+          <div class="uses" aria-label="Good for">
+            <span>Gifts</span><span>Keepsakes</span><span>Desk and shelf decor</span><span>Night lights (with LED)</span><span>Jewellery</span><span>Something for yourself</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><b>Made for you</b><span>Poured after you order, in the colours and design you pick. Not mass-produced, not pulled from a box.</span></div>
+        <div><b>One of a kind</b><span>Resin flows and settles differently every pour, so every swirl and sparkle is unique to your piece.</span></div>
+        <div><b>Lights up</b><span>Large and XL pieces can sit on an LED base that glows through the resin. It makes a great night light.</span></div>
+        <div><b>Clear prices</b><span>Pieces start at <span class="num" id="fromPrice2">$5.99</span>, and every add-on has a set price you can see before you order.</span></div>
+      </div>
+
+      <div class="made" aria-label="How a piece is made">
+        <div><b>Design</b><span>You choose the size and add-ons, and tell us any ideas.</span></div>
+        <div><b>Mix &amp; tint</b><span>We mix the resin and colour it with dyes, mica and glitter.</span></div>
+        <div><b>Pour &amp; layer</b><span>Poured into the mould, with your print or inclusions set inside.</span></div>
+        <div><b>Cure</b><span>Left to harden into solid, crystal-clear resin.</span></div>
+        <div><b>Finish</b><span>Demoulded, polished, LED fitted, and ready for you to collect.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="work" hidden>
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Our work</p>
+        <h2>Fresh from the mould</h2>
+        <p class="lede">Pieces we've poured. Every one is a little different.</p>
+      </div>
+      <div class="gallery" id="gallery"></div>
+      <form class="upload" id="upForm" hidden>
+        <span style="font-weight:600">Add a photo (editors)</span>
+        <div class="row">
+          <input type="file" id="upFile" accept="image/*" aria-label="Photo file">
+          <input type="text" id="upCaption" placeholder="Caption, e.g. Large ocean pour with LED" style="flex:1 1 220px" aria-label="Caption">
+          <button class="btn small" type="submit" id="upBtn">Upload</button>
+        </div>
+        <div id="upMsg" hidden></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Step 1 · Choose a size</p>
+        <h2>Four sizes</h2>
+        <p class="lede">Every piece comes in one clear or single-colour pour. Add-ons below are priced per piece.</p>
+      </div>
+      <div class="sizes" id="sizes"></div>
+    </div>
+  </section>
+
+  <section id="addons">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Step 2 · Make it yours</p>
+        <h2>Add-ons by size</h2>
+        <p class="lede">Some add-ons cost more on bigger pieces because they use more material.</p>
+      </div>
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>Add-on</th><th>Small</th><th>Medium</th><th>Large</th><th>XL</th></tr></thead>
+          <tbody id="addonRows"></tbody>
+        </table>
+      </div>
+      <div class="bundle" id="bundleBox"></div>
+    </div>
+  </section>
+
+  <section id="build">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Price check</p>
+        <h2>Build your piece</h2>
+        <p class="lede">See what your piece will cost, then add it to your order. Build as many pieces as you like.</p>
+      </div>
+      <div class="builder">
+        <form class="panel" id="builder" onsubmit="return false">
+          <fieldset>
+            <legend>Size</legend>
+            <div class="seg" id="sizeSeg"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Add-ons</legend>
+            <label class="opt"><input type="checkbox" id="print"><span><span class="t">Printed design</span><br><span class="d">Your image or a custom 3D design</span></span><span class="c" id="cPrint"></span></label>
+            <div class="opt" style="cursor:default">
+              <span></span>
+              <span><span class="t">Colours</span><br><span class="d">1 colour is included. 2 or more adds the dye charge.</span>
+                <span class="row" style="margin-top:8px">
+                  <span class="stepper"><button type="button" id="colMinus" aria-label="Fewer colours">−</button><output id="colours" aria-live="polite">1</output><button type="button" id="colPlus" aria-label="More colours">+</button></span>
+                </span>
+              </span>
+              <span class="c" id="cDye"></span>
+            </div>
+            <label class="opt"><input type="checkbox" id="sparkle"><span><span class="t">Sparkle</span><br><span class="d" id="dSparkle">Glitter, mica or flakes</span></span><span class="c" id="cSparkle"></span></label>
+            <label class="opt" id="optLed"><input type="checkbox" id="led"><span><span class="t">LED light</span><br><span class="d" id="dLed">Large and XL only</span></span><span class="c" id="cLed"></span></label>
+            <label class="opt"><input type="checkbox" id="custom"><span><span class="t">Custom inclusion</span><br><span class="d">Crystals, scenery, sand, leaves, or your own idea</span></span><span class="c" id="cCustom"></span></label>
+            <div class="field" id="customBox" hidden>
+              <label for="customNote">Describe your idea</label>
+              <textarea id="customNote" placeholder="e.g. blue wave with real sand at the bottom"></textarea>
+            </div>
+          </fieldset>
+        </form>
+        <aside class="receipt" aria-live="polite">
+          <span class="eyebrow" style="color:inherit;opacity:.7">This piece</span>
+          <div id="lines"></div>
+          <hr>
+          <div class="line"><span>Each</span><span id="each"></span></div>
+          <div class="row" style="justify-content:space-between">
+            <span style="opacity:.8">How many?</span>
+            <span class="stepper"><button type="button" id="qtyMinus" aria-label="Fewer">−</button><output id="qty">1</output><button type="button" id="qtyPlus" aria-label="More">+</button></span>
+          </div>
+          <div class="total num" id="total">$9.99</div>
+          <p class="note" id="totalNote"></p>
+          <button class="btn" type="button" id="addBtn">Add to order</button>
+          <p class="added" id="added" hidden></p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section id="checkout">
+    <div class="wrap po">
+      <div class="head" style="margin:0">
+        <p class="eyebrow">Order &amp; pay</p>
+        <h2>Reserve your pieces</h2>
+        <p class="lede">Each piece is poured after you order, so it's made for you.</p>
+        <ol class="steps" style="margin-top:12px">
+          <li><span>Build your pieces above and add your details here.</span></li>
+          <li><span>Pay by PayID or bank transfer, using your order reference so we can match it. Orders with a custom inclusion or XL sparkle get a confirmed price from us first.</span></li>
+          <li><span>We pour and cure your pieces, then let you know when they're ready to collect.</span></li>
+        </ol>
+        <div class="paycard" style="margin-top:20px">
+          <span class="eyebrow">How to pay</span>
+          <div id="payDetails"><p class="muted">We'll send our PayID and bank details when we confirm your order.</p></div>
+        </div>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <form class="panel" id="poForm" novalidate>
+          <div class="field">
+            <span class="lbl">Your order</span>
+            <div class="cart" id="cart"></div>
+          </div>
+          <div class="field">
+            <label for="poName">Name</label>
+            <input type="text" id="poName" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="poContact">Phone, email or Instagram</label>
+            <input type="text" id="poContact" required>
+            <span class="hint">So we can confirm the price and tell you when it's ready.</span>
+          </div>
+          <div class="field">
+            <label for="poPickup">Collection</label>
+            <select id="poPickup">
+              <option>At the market day stall</option>
+              <option>Arrange a time with us</option>
+              <option class="team-opt" hidden disabled>Bought at the stall today</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="poNotes">Anything else?</label>
+            <textarea id="poNotes" placeholder="Colours, a theme, a deadline, a gift message"></textarea>
+          </div>
+          <div class="field team-only" hidden>
+            <label for="poPaid">Payment taken now (team)</label>
+            <select id="poPaid">
+              <option value="">Not paid yet</option>
+              <option value="PayID">Paid in full: PayID / bank transfer</option>
+              <option value="Cash">Paid in full: cash</option>
+              <option value="Card">Paid in full: card at stall</option>
+            </select>
+            <span class="hint">Only for orders with a fixed price. Record part payments from the dashboard.</span>
+          </div>
+          <div class="hp" aria-hidden="true"><label for="poWebsite">Leave this empty</label><input type="text" id="poWebsite" tabindex="-1" autocomplete="off"></div>
+          <div id="poMsg" hidden></div>
+          <div class="row">
+            <button class="btn" id="poSubmit" type="submit">Place order</button>
+            <button class="btn ghost" id="poCopy" type="button" hidden>Copy summary</button>
+          </div>
+        </form>
+        <div class="paycard" id="payNow" hidden aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="track">
+    <div class="wrap po">
+      <div class="head" style="margin:0">
+        <p class="eyebrow">Already ordered?</p>
+        <h2>Check your order</h2>
+        <p class="lede">Enter your order reference and the phone, email or Instagram you ordered with to see where it's up to and what's left to pay.</p>
+        <div id="recent" hidden><span class="muted" style="font-size:.9rem">Your orders on this device</span><div class="recent" id="recentList"></div></div>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <form class="panel" id="trackForm" novalidate>
+          <div class="field"><label for="trRef">Order reference</label><input type="text" id="trRef" placeholder="RSN-XXXXX" autocapitalize="characters" spellcheck="false"></div>
+          <div class="field"><label for="trContact">Phone, email or Instagram you ordered with</label><input type="text" id="trContact"></div>
+          <div id="trMsg" hidden></div>
+          <div class="row"><button class="btn" type="submit" id="trBtn">Check order</button></div>
+        </form>
+        <div class="paycard" id="trResult" hidden aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="faq">
+        <details><summary>Will my piece look exactly like the photos?</summary><p>Close, but not exactly. Resin moves while it sets, so the swirls, bubbles and sparkle in every piece come out a little different. That's what makes yours one of a kind.</p></details>
+        <details><summary>Can I use my own picture or design?</summary><p>Yes. Add a printed design and send us the image, or describe the 3D design you want. Add a note when you order and we'll be in touch.</p></details>
+        <details><summary>What can go inside a piece?</summary><p>Glitter, mica and flakes, plus custom inclusions like crystals, sand, dried leaves or small scenery. Tell us your idea and we'll quote it before we start.</p></details>
+        <details><summary>How do I pay?</summary><p>By PayID or bank transfer using your order reference, or with cash or card at our market stall. Custom work gets a confirmed price before you pay.</p></details>
+        <details><summary>How long does an order take?</summary><p>Each piece is poured and left to cure after you order, so it takes a little time. We'll let you know when you order, and you can check progress any time under Track order.</p></details>
+        <details><summary>How do I look after my piece?</summary><p>Wipe it with a soft, damp cloth. Keep it away from high heat, and out of strong direct sun for long periods, which can slowly yellow resin over time.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
+
+<main id="dash">
+  <section style="padding-top:40px">
+    <div class="wrap">
+      <div class="dhead">
+        <div class="head" style="margin:0">
+          <p class="eyebrow">Team dashboard</p>
+          <h2>Orders &amp; payments</h2>
+        </div>
+        <div class="row">
+          <span class="who" id="whoBox" hidden><span id="whoami"></span><button class="btn small ghost" type="button" id="signOut">Sign out</button></span>
+          <a class="btn" href="#build">New order</a>
+          <a class="btn ghost" href="#top">View shop</a>
+        </div>
+      </div>
+      <div class="panel signin" id="signin" hidden>
+        <h3>Team sign-in</h3>
+        <p class="muted">Sign in with the email the Resinate team list has for you. We'll email you a sign-in link.</p>
+        <form id="siEmailForm" novalidate>
+          <div class="field"><label for="siEmail">Email</label><input type="text" id="siEmail" inputmode="email" autocomplete="email"></div>
+          <button class="btn" type="submit" id="siSend">Email me a code</button>
+        </form>
+        <form id="siCodeForm" novalidate hidden>
+          <p class="muted" style="font-size:.92rem">Open the link in the email on this device and you'll come straight back here, signed in. If the email has a code instead, type it below.</p>
+          <div class="field"><label for="siCode">Code from the email (if it has one)</label><input type="text" id="siCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></div>
+          <div class="row"><button class="btn" type="submit" id="siVerify">Sign in</button><button class="btn ghost" type="button" id="siBack">Use a different email</button></div>
+        </form>
+        <div id="siMsg" hidden></div>
+      </div>
+      <div class="panel setup" id="setupBox" hidden>
+        <p class="eyebrow" style="color:var(--amber)">Connect the database</p>
+        <h3>Finish connecting Resinate to Supabase</h3>
+        <p class="muted">The page reached your Supabase project, but the Resinate tables aren't there yet. Customers can browse, but orders can't be saved until you do this once:</p>
+        <ol>
+          <li><a id="sqlEditorLink" href="https://supabase.com/dashboard" target="_blank" rel="noopener">Open the SQL Editor</a> for your project and start a new query.</li>
+          <li><button class="btn small" type="button" id="copySetupSql">Copy the setup SQL</button> and paste it in. <span class="muted">(Or open <a href="https://github.com/Lucky40802/Resinate/blob/main/supabase/setup.sql" target="_blank" rel="noopener">supabase/setup.sql</a> and copy it from there.)</span></li>
+          <li>Press <b>Run</b>, then come back and reload this page.</li>
+        </ol>
+        <p class="muted" style="font-size:.88rem">Connected project: <span id="projRef"></span>. To use a different Supabase project, change <code>supabaseUrl</code> and <code>supabaseKey</code> in <code>resinate/config.js</code>.</p>
+      </div>
+      <div class="panel" id="notStaff" hidden>
+        <h3>You're not on the team list yet</h3>
+        <p class="muted">You're signed in as <b id="nsEmail"></b>, but that email isn't in <b>resinate_staff</b>. If someone else runs Resinate, ask an editor to add you from the dashboard's Team section.</p>
+        <p class="muted">Setting Resinate up yourself? Run this once in your project's <a id="sqlEditorLink2" href="https://supabase.com/dashboard" target="_blank" rel="noopener">SQL Editor</a> to make yourself the first editor, then reload:</p>
+        <div class="code" id="nsSql"></div>
+        <div class="row"><button class="btn small" type="button" data-copy="nsSql">Copy</button><button class="btn small ghost" type="button" id="signOut2">Sign out</button></div>
+      </div>
+      <div class="empty" id="noCloud" hidden>The order system couldn't be reached, so the dashboard can't load. Check your connection and reload the page.</div>
+      <div id="dashBody" hidden>
+        <div class="panel setup" id="startBox" hidden style="border-color:var(--resin)">
+          <div class="row" style="justify-content:space-between"><h3>Getting started</h3><button class="btn small ghost" type="button" id="startHide">Hide</button></div>
+          <ul class="check" id="startList"></ul>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><b id="kPaid">$0.00</b><span>Money received</span></div>
+          <div class="kpi"><b id="kOwed">$0.00</b><span>Still owed on priced orders</span></div>
+          <div class="kpi"><b id="kOpen">0</b><span>Open orders</span></div>
+          <div class="kpi"><b id="kQuote">0</b><span>Need a price from us</span></div>
+        </div>
+        <div class="charts">
+          <div class="chart" id="chartWeeks">
+            <h3>Money received by week</h3>
+            <p class="sub">Last 8 weeks, all payment methods</p>
+            <div class="plot"></div>
+          </div>
+          <div class="chart" id="chartSizes">
+            <h3>Pieces ordered by size</h3>
+            <p class="sub">All orders except cancelled</p>
+            <div class="plot"></div>
+          </div>
+        </div>
+        <div class="tomake">
+          <h3>To make</h3>
+          <p class="sub">Pieces on orders that are New, Confirmed or Making</p>
+          <div class="makegrid" id="makegrid"></div>
+        </div>
+
+        <div class="tools">
+          <label for="filter" class="eyebrow">Show</label>
+          <select id="filter">
+            <option value="open">Open orders</option>
+            <option value="unpaid">Waiting on payment</option>
+            <option value="quote">Need a price</option>
+            <option value="paid">Paid</option>
+            <option value="Ready">Ready to collect</option>
+            <option value="Collected">Collected</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="all">All orders</option>
+          </select>
+          <input type="search" id="search" placeholder="Search name or reference" aria-label="Search orders">
+          <span class="spacer"></span>
+          <span class="muted" id="lastSync" style="font-size:.85rem"></span><button class="btn small ghost" type="button" id="refreshBtn">Refresh</button><button class="btn small ghost" type="button" id="exportBtn">Export to spreadsheet</button>
+        </div>
+        <div class="orders" id="orders"><div class="empty">Loading orders…</div></div>
+
+        <div class="dsec" id="pricesSec" hidden>
+          <div class="head" style="margin:0">
+            <p class="eyebrow">Editors only</p>
+            <h3>Prices</h3>
+            <p class="lede">The shop and new orders use these straight away. Existing orders keep the price they were made at.</p>
+          </div>
+          <form class="panel" id="priceForm" novalidate>
+            <div class="field"><span class="lbl">Size prices</span>
+              <div class="settings">
+                <div class="field"><label for="pbS">Small $</label><input type="text" inputmode="decimal" id="pbS"></div>
+                <div class="field"><label for="pbM">Medium $</label><input type="text" inputmode="decimal" id="pbM"></div>
+                <div class="field"><label for="pbL">Large $</label><input type="text" inputmode="decimal" id="pbL"></div>
+                <div class="field"><label for="pbXL">XL $</label><input type="text" inputmode="decimal" id="pbXL"></div>
+              </div>
+            </div>
+            <div class="field"><span class="lbl">Printed design</span>
+              <div class="settings">
+                <div class="field"><label for="ppS">Small $</label><input type="text" inputmode="decimal" id="ppS"></div>
+                <div class="field"><label for="ppM">Medium $</label><input type="text" inputmode="decimal" id="ppM"></div>
+                <div class="field"><label for="ppL">Large $</label><input type="text" inputmode="decimal" id="ppL"></div>
+                <div class="field"><label for="ppXL">XL $</label><input type="text" inputmode="decimal" id="ppXL"></div>
+              </div>
+            </div>
+            <div class="settings">
+              <div class="field"><label for="pDye">Colour dye (2+ colours) $</label><input type="text" inputmode="decimal" id="pDye"></div>
+              <div class="field"><label for="pSpLo">Sparkle from $</label><input type="text" inputmode="decimal" id="pSpLo"></div>
+              <div class="field"><label for="pSpHi">Sparkle up to $</label><input type="text" inputmode="decimal" id="pSpHi"></div>
+              <div class="field"><label for="pSpXL">XL sparkle $</label><input type="text" inputmode="decimal" id="pSpXL" placeholder="blank = ask us"></div>
+              <div class="field"><label for="pLedL">LED, Large $</label><input type="text" inputmode="decimal" id="pLedL"></div>
+              <div class="field"><label for="pLedXL">LED, XL $</label><input type="text" inputmode="decimal" id="pLedXL"></div>
+              <div class="field"><label for="pCustom">Custom inclusion from $</label><input type="text" inputmode="decimal" id="pCustom"></div>
+              <div class="field"><label for="pBundle">Bundle discount $</label><input type="text" inputmode="decimal" id="pBundle" placeholder="0 = coming soon"></div>
+            </div>
+            <p class="hint muted">The bundle discount comes off any piece with a printed design, 2 or more colours and sparkle.</p>
+            <div id="priceMsg" hidden></div>
+            <div class="row"><button class="btn" type="submit">Save prices</button><button class="btn ghost" type="button" id="priceReset">Undo changes</button></div>
+          </form>
+        </div>
+
+        <div class="dsec" id="teamSec" hidden>
+          <div class="head" style="margin:0">
+            <p class="eyebrow">Editors only</p>
+            <h3>Team</h3>
+            <p class="lede">People who can open this dashboard. They sign in with the email listed here. Staff take orders and record payments; editors can also change prices, payment details, photos and this list.</p>
+          </div>
+          <div class="panel">
+            <div class="team" id="teamList"></div>
+            <form class="row" id="teamForm" novalidate>
+              <input type="text" id="tmEmail" inputmode="email" placeholder="teammate@example.com" aria-label="Teammate's email" style="flex:1 1 220px">
+              <select id="tmRole" aria-label="Role"><option value="staff">Staff</option><option value="editor">Editor</option></select>
+              <button class="btn small" type="submit">Add to team</button>
+            </form>
+            <div id="tmMsg" hidden></div>
+          </div>
+        </div>
+
+        <div class="dsec" id="settingsSec" hidden>
+          <div class="head" style="margin:0">
+            <p class="eyebrow">Editors only</p>
+            <h3>Payment details</h3>
+            <p class="lede">Customers see these on the Order &amp; pay section and in the messages you copy. Leave a field blank to hide it.</p>
+          </div>
+          <form class="panel" id="setForm" novalidate>
+            <div class="settings two">
+              <div class="field"><label for="sPayid">PayID</label><input type="text" id="sPayid" placeholder="Phone number, email or ABN"></div>
+              <div class="field"><label for="sName">Account name</label><input type="text" id="sName"></div>
+              <div class="field"><label for="sBsb">BSB</label><input type="text" id="sBsb" inputmode="numeric"></div>
+              <div class="field"><label for="sAcct">Account number</label><input type="text" id="sAcct" inputmode="numeric"></div>
+            </div>
+            <div class="field"><label for="sNote">Note for customers</label><input type="text" id="sNote" placeholder="e.g. Please pay within 3 days of ordering"></div>
+            <div id="setMsg" hidden></div>
+            <div class="row"><button class="btn" type="submit">Save payment details</button></div>
+          </form>
+        </div>
+
+        <div class="dsec">
+          <h3>Team notes</h3>
+          <div class="notes">
+            <div><b>Custom inclusions</b>Crystals, scenery and custom requests are up to the sales agent. Call Sap for pricing and details. Range starts at $2.</div>
+            <div><b>XL sparkle</b>Not on the price list. Quote it case by case, or set a price above.</div>
+            <div><b>Bundle pricing</b>Print + dye + sparkle bundle will be cheaper than separate add-ons. Set the discount in Prices once it's decided.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap row" style="justify-content:space-between">
+    <span>Resinate · handmade resin pieces</span>
+    <span class="contact" id="contactLine" hidden></span>
+    <span>Custom work is quoted before we start. <a href="#dashboard">Team sign-in</a></span>
+  </div>
+</footer>
+<div class="toast" id="toast" hidden role="status"></div>
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
+<script>
+(function(){
+  "use strict";
+  var CFG = window.RESINATE_CONFIG || {};
+  var CONTACT = CFG.contact || {};
+
+  // ---- prices (cents). Editors override these from the dashboard (resinate_settings 'prices'). ----
+  // Keep the defaults and rules in step with private.resinate_quote() in supabase/setup.sql.
+  var SIZES = [{k:"S",name:"Small",h:30},{k:"M",name:"Medium",h:46},{k:"L",name:"Large",h:62},{k:"XL",name:"XL",h:78}];
+  var DEFAULT_PRICES = {
+    base:{S:599,M:999,L:1399,XL:1999},
+    print:{S:199,M:199,L:299,XL:299},
+    dye:99, sparkleLo:100, sparkleHi:149, sparkleXL:null,
+    led:{L:449,XL:399}, customMin:200, bundleOff:0
+  };
+  var P = JSON.parse(JSON.stringify(DEFAULT_PRICES));
+  var STATUSES = ["New","Confirmed","Making","Ready","Collected","Cancelled"];
+  var METHODS = ["PayID","Cash","Card"];
+
+  function $(id){return document.getElementById(id)}
+  function money(c){ var neg=c<0; c=Math.abs(c); return (neg?"−":"")+"$"+(c/100).toFixed(2); }
+  function range(lo,hi){return lo===hi?money(lo):money(lo)+"–"+money(hi).slice(1)}
+  function short(c){ return c%100===0 ? "$"+(c/100) : money(c); }
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function sizeName(k){ var s=SIZES.filter(function(x){return x.k===k})[0]; return s?s.name:k; }
+  function cents(str){ var t=String(str==null?"":str).replace(/[^0-9.]/g,""); if(!t) return NaN; var n=parseFloat(t); return isFinite(n)?Math.round(n*100):NaN; }
+  function toast(text){ var t=$("toast"); t.textContent=text; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(function(){ t.hidden=true; },2600); }
+  function errText(e){ return (e && (e.message || e.error_description || e.code)) || "unknown error"; }
+  function sparkleRange(k){ return k==="XL" ? (P.sparkleXL ? [P.sparkleXL,P.sparkleXL] : null) : [P.sparkleLo,P.sparkleHi]; }
+  function ledPrice(k){ return (k==="L"||k==="XL") ? (P.led[k]||null) : null; }
+  function mergePrices(d){
+    var out = JSON.parse(JSON.stringify(DEFAULT_PRICES));
+    if(!d) return out;
+    ["base","print","led"].forEach(function(g){ if(d[g]) for(var k in out[g]) if(typeof d[g][k]==="number") out[g][k]=d[g][k]; });
+    ["dye","sparkleLo","sparkleHi","customMin","bundleOff"].forEach(function(k){ if(typeof d[k]==="number") out[k]=d[k]; });
+    out.sparkleXL = typeof d.sparkleXL==="number" ? d.sparkleXL : null;
+    return out;
+  }
+
+  // ---- builder state (kept in this browser so a half-built order survives a reload) ----
+  var state = {size:"M", print:false, colours:1, sparkle:false, led:false, custom:false, customNote:"", qty:1};
+  var cart = [];
+  try{
+    var d = JSON.parse(localStorage.getItem("resinate-draft")||"null");
+    if(d && d.state && P.base[d.state.size]!=null) Object.assign(state, d.state);
+    if(d && Array.isArray(d.cart)) cart = d.cart.filter(function(it){ return it && P.base[it.size]!=null; });
+  }catch(e){}
+  function saveDraft(){ try{ localStorage.setItem("resinate-draft", JSON.stringify({state:state, cart:cart})); }catch(e){} }
+
+  // ---- shop price displays ----
+  function renderPriceDisplays(){
+    $("fromPrice").textContent = $("fromPrice2").textContent = money(Math.min(P.base.S,P.base.M,P.base.L,P.base.XL));
+    $("sizes").innerHTML = SIZES.map(function(s){
+      var w = 26 + s.h*0.9;
+      return '<div class="size"><div class="top"><span class="code">'+s.k+'</span><i class="blob" style="width:'+w+'px;height:'+s.h+'px"></i></div>'+
+        '<h3>'+s.name+'</h3><div class="price num">'+money(P.base[s.k])+'</div>'+
+        '<p class="incl">'+(ledPrice(s.k)?"LED light available":"Clear or one colour")+'</p></div>';
+    }).join("");
+    $("sizeSeg").innerHTML = SIZES.map(function(s){
+      return '<label><input type="radio" name="size" id="size'+s.k+'" value="'+s.k+'"'+(s.k===state.size?" checked":"")+'><span><b>'+s.name+'</b><small>'+money(P.base[s.k])+'</small></span></label>';
+    }).join("");
+    function cells(fn){ return SIZES.map(function(s){ return fn(s.k); }).join(""); }
+    $("addonRows").innerHTML =
+      '<tr><td><b>Printed design</b><span class="sub">Your own image or custom 3D design set into the resin</span></td>'+cells(function(k){return '<td class="p">'+money(P.print[k])+'</td>'})+'</tr>'+
+      '<tr><td><b>Colour dye</b><span class="sub">Charged when you pick 2 or more colours. One colour is included.</span></td>'+cells(function(){return '<td class="p">'+money(P.dye)+'</td>'})+'</tr>'+
+      '<tr><td><b>Sparkle</b><span class="sub">Glitter, mica or flakes. Price depends on how much you want.</span></td>'+cells(function(k){var r=sparkleRange(k); return r?'<td class="p">'+range(r[0],r[1])+'</td>':'<td class="p ask">Ask us</td>'})+'</tr>'+
+      '<tr><td><b>LED light</b><span class="sub">Light-up base for larger pieces</span></td>'+cells(function(k){var l=ledPrice(k); return l?'<td class="p">'+money(l)+'</td>':'<td class="p na">Not available</td>'})+'</tr>'+
+      '<tr><td><b>Custom inclusions</b><span class="sub">Crystals, scenery, or a theme like sand for a wave or leaves for a nature piece. We quote each one.</span></td>'+cells(function(){return '<td class="p">from '+short(P.customMin)+'</td>'})+'</tr>';
+    $("bundleBox").innerHTML = P.bundleOff>0
+      ? '<span class="pill ok">Bundle deal</span><div style="min-width:0;flex:1 1 260px"><strong>Save '+money(P.bundleOff)+' on the full modification bundle</strong><p>Add a printed design, 2 or more colours and sparkle to one piece and the discount comes off automatically.</p></div>'
+      : '<span class="pill warn">Coming soon</span><div style="min-width:0;flex:1 1 260px"><strong>Full modification bundle</strong><p>Printed design, colour dye and sparkle together will cost less than adding each one. Bundle prices are on the way; ask us at the stall.</p></div>';
+    $("cCustom").textContent = "from "+short(P.customMin);
+  }
+
+  // ---- quoting ----
+  function quoteItem(it){
+    var lines = [{label:sizeName(it.size)+" piece", lo:P.base[it.size], hi:P.base[it.size]}];
+    var open = [];
+    if(it.print) lines.push({label:"Printed design", lo:P.print[it.size], hi:P.print[it.size]});
+    if(it.colours>=2) lines.push({label:"Colour dye ("+it.colours+" colours)", lo:P.dye, hi:P.dye});
+    if(it.sparkle){
+      var sp = sparkleRange(it.size);
+      if(sp) lines.push({label:"Sparkle", lo:sp[0], hi:sp[1]});
+      else { lines.push({label:"Sparkle (XL)", text:"quoted"}); open.push("XL sparkle"); }
+    }
+    var l = ledPrice(it.size);
+    if(it.led && l) lines.push({label:"LED light", lo:l, hi:l});
+    if(it.custom){ lines.push({label:"Custom inclusion", lo:P.customMin, hi:P.customMin, text:"from "+short(P.customMin)}); open.push("custom inclusion"); }
+    if(P.bundleOff>0 && it.print && it.colours>=2 && it.sparkle) lines.push({label:"Bundle discount", lo:-P.bundleOff, hi:-P.bundleOff});
+    var lo=0, hi=0;
+    lines.forEach(function(x){ if(x.lo!=null){ lo+=x.lo; hi+=x.hi; } });
+    return {lines:lines, lo:lo, hi:hi, open:open};
+  }
+  function quoteCart(items){
+    var lo=0, hi=0, open=[];
+    items.forEach(function(it){ var q=quoteItem(it), n=it.qty||1; lo+=q.lo*n; hi+=q.hi*n; q.open.forEach(function(o){ if(open.indexOf(o)<0) open.push(o); }); });
+    return {lo:lo, hi:hi, open:open};
+  }
+  function est(q){ return (q.open.length?"from ":"")+range(q.lo,q.hi); }
+  function itemSpec(it){
+    var bits = [sizeName(it.size)];
+    if(it.print) bits.push("printed design");
+    if(it.colours>=2) bits.push(it.colours+" colours");
+    if(it.sparkle) bits.push("sparkle");
+    if(it.led) bits.push("LED");
+    if(it.custom) bits.push("custom"+(it.customNote?": "+it.customNote:""));
+    return bits.join(" · ");
+  }
+
+  function renderBuilder(){
+    var st = state;
+    $("cPrint").textContent = money(P.print[st.size]);
+    $("colours").textContent = st.colours;
+    $("colMinus").disabled = st.colours<=1;
+    $("colPlus").disabled = st.colours>=6;
+    $("cDye").textContent = st.colours>=2 ? money(P.dye) : "Included";
+    var sp = sparkleRange(st.size);
+    $("cSparkle").textContent = sp ? range(sp[0],sp[1]) : "Ask us";
+    $("dSparkle").textContent = sp ? "Glitter, mica or flakes" : "Glitter, mica or flakes. XL sparkle is quoted by us.";
+    var l = ledPrice(st.size);
+    $("led").disabled = !l;
+    if(!l){ $("led").checked = false; st.led = false; }
+    $("optLed").classList.toggle("off", !l);
+    $("cLed").textContent = l ? money(l) : "—";
+    $("dLed").textContent = l ? "Light-up base" : "Available on Large and XL";
+    $("customBox").hidden = !st.custom;
+    $("qty").textContent = st.qty;
+    $("qtyMinus").disabled = st.qty<=1;
+    $("qtyPlus").disabled = st.qty>=20;
+
+    var q = quoteItem(st);
+    $("lines").innerHTML = q.lines.map(function(x){
+      var v = x.lo==null ? x.text : (x.text || range(x.lo,x.hi));
+      return '<div class="line"><span>'+esc(x.label)+'</span><span>'+esc(v)+'</span></div>';
+    }).join("");
+    $("each").textContent = est(q);
+    $("total").textContent = est({lo:q.lo*st.qty, hi:q.hi*st.qty, open:q.open});
+    var note = [];
+    if(q.lo!==q.hi) note.push("Sparkle price depends on how much you add.");
+    if(q.open.length) note.push("We'll confirm the price of your "+q.open.join(" and ")+" before you pay.");
+    if(!(P.bundleOff>0) && st.print && st.colours>=2 && st.sparkle) note.push("This qualifies for the full modification bundle, which will cost less once it launches.");
+    $("totalNote").textContent = note.join(" ");
+    $("addBtn").textContent = st.qty>1 ? "Add "+st.qty+" to order" : "Add to order";
+  }
+
+  function renderCart(){
+    var n = cart.reduce(function(a,it){return a+(it.qty||1)},0);
+    $("cartBadge").hidden = !n; $("cartBadge").textContent = n;
+    if(!cart.length){
+      $("cart").innerHTML = '<div class="empty" style="padding:18px">No pieces yet. <a href="#build">Build a piece</a> and press Add to order.</div>';
+      return;
+    }
+    $("cart").innerHTML = cart.map(function(it,i){
+      var iq = quoteItem(it), n2 = it.qty||1;
+      return '<div class="citem"><span class="spec">'+(n2>1?'<b>'+n2+' ×</b> ':'')+esc(itemSpec(it))+'</span><span class="amt">'+esc(est({lo:iq.lo*n2,hi:iq.hi*n2,open:iq.open}))+'</span><button type="button" data-rm="'+i+'" aria-label="Remove '+esc(itemSpec(it))+'">Remove</button></div>';
+    }).join("")+'<div class="ctotal"><span>Estimated total</span><span>'+esc(est(quoteCart(cart)))+'</span></div>';
+  }
+  function cartText(){
+    return cart.map(function(it){ var iq=quoteItem(it), n=it.qty||1; return "• "+(n>1?n+" × ":"")+itemSpec(it)+" — "+est({lo:iq.lo*n,hi:iq.hi*n,open:iq.open}); }).join("\n")+"\nEstimate: "+est(quoteCart(cart));
+  }
+
+  function renderAll(){ renderPriceDisplays(); renderBuilder(); renderCart(); }
+
+  $("sizeSeg").addEventListener("change", function(e){ state.size = e.target.value; renderBuilder(); saveDraft(); });
+  ["print","sparkle","led","custom"].forEach(function(k){
+    $(k).addEventListener("change", function(){ state[k] = this.checked; renderBuilder(); saveDraft(); });
+  });
+  $("colMinus").addEventListener("click", function(){ state.colours = Math.max(1,state.colours-1); renderBuilder(); saveDraft(); });
+  $("colPlus").addEventListener("click", function(){ state.colours = Math.min(6,state.colours+1); renderBuilder(); saveDraft(); });
+  $("qtyMinus").addEventListener("click", function(){ state.qty = Math.max(1,state.qty-1); renderBuilder(); saveDraft(); });
+  $("qtyPlus").addEventListener("click", function(){ state.qty = Math.min(20,state.qty+1); renderBuilder(); saveDraft(); });
+  $("customNote").addEventListener("input", function(){ state.customNote = this.value; saveDraft(); });
+  $("addBtn").addEventListener("click", function(){
+    cart.push({size:state.size, print:state.print, colours:state.colours, sparkle:state.sparkle, led:state.led, custom:state.custom, customNote:state.custom?state.customNote.trim():"", qty:state.qty});
+    state.qty = 1; saveDraft(); renderBuilder(); renderCart();
+    var n = cart.reduce(function(a,x){return a+(x.qty||1)},0);
+    $("added").hidden = false;
+    $("added").innerHTML = 'Added. '+n+(n===1?' piece':' pieces')+' in your order. <a href="#checkout">Go to checkout</a> or build another.';
+  });
+  $("cart").addEventListener("click", function(e){
+    var b = e.target.closest("[data-rm]"); if(!b) return;
+    cart.splice(+b.getAttribute("data-rm"),1); saveDraft(); renderCart();
+  });
+
+  ["print","sparkle","led","custom"].forEach(function(k){ $(k).checked = !!state[k]; });
+  $("customNote").value = state.customNote||"";
+  renderAll();
+
+  // ---- contact links (from config.js) ----
+  function contactLinks(){
+    var out = [];
+    if(CONTACT.instagram) out.push('<a href="https://instagram.com/'+encodeURIComponent(CONTACT.instagram.replace(/^@/,""))+'" target="_blank" rel="noopener">Instagram @'+esc(CONTACT.instagram.replace(/^@/,""))+'</a>');
+    if(CONTACT.email) out.push('<a href="mailto:'+esc(CONTACT.email)+'">'+esc(CONTACT.email)+'</a>');
+    if(CONTACT.phone) out.push('<a href="tel:'+esc(CONTACT.phone.replace(/[^0-9+]/g,""))+'">'+esc(CONTACT.phone)+'</a>');
+    return out;
+  }
+  (function(){ var c = contactLinks(); if(c.length){ $("contactLine").innerHTML = "Contact us: "+c.join(" · "); $("contactLine").hidden = false; } })();
+
+  // ---- copy helpers ----
+  function copyText(text, btn, fallbackEl){
+    var done = function(){ if(!btn) return; var o=btn.textContent; btn.textContent="Copied"; setTimeout(function(){ btn.textContent=o; },1600); };
+    var fail = function(){ if(fallbackEl){ var r=document.createRange(); r.selectNodeContents(fallbackEl); var s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Copy it with your keyboard or long-press."); } else toast("Couldn't copy here."); };
+    try{ navigator.clipboard.writeText(text).then(done, fail); }catch(e){ fail(); }
+  }
+  document.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest("[data-copy]");
+    if(b){ var target = $(b.getAttribute("data-copy")); copyText(target.textContent, b, target); }
+  });
+
+  // ---- payment details ----
+  var pay = {};
+  function payRows(ref){
+    var rows = [];
+    if(pay.payid) rows.push(["PayID", pay.payid, "Payid"]);
+    if(pay.name) rows.push(["Account name", pay.name, "Name"]);
+    if(pay.bsb) rows.push(["BSB", pay.bsb, "Bsb"]);
+    if(pay.acct) rows.push(["Account", pay.acct, "Acct"]);
+    if(ref) rows.push(["Reference", ref, "Ref"]);
+    return rows;
+  }
+  function kvHtml(rows, prefix){
+    return '<dl class="kv">'+rows.map(function(r){
+      var id = prefix+r[2];
+      return '<dt>'+esc(r[0])+'</dt><dd id="'+id+'">'+esc(r[1])+'</dd><button type="button" class="copy" data-copy="'+id+'">Copy</button>';
+    }).join("")+'</dl>';
+  }
+  function hasPay(){ return !!(pay.payid || (pay.bsb && pay.acct)); }
+  function payLine(){ return pay.payid ? "PayID "+pay.payid+(pay.name?" ("+pay.name+")":"") : (pay.bsb && pay.acct ? "BSB "+pay.bsb+", account "+pay.acct+(pay.name?" ("+pay.name+")":"") : ""); }
+  function renderPayDetails(){
+    if(!hasPay()){ $("payDetails").innerHTML = '<p class="muted">We\'ll send our PayID and bank details when we confirm your order.</p>'; return; }
+    $("payDetails").innerHTML = kvHtml(payRows(null),"h")+
+      '<p class="muted" style="margin-top:10px">Put your order reference in the payment description.'+(pay.note?" "+esc(pay.note):"")+'</p>';
+  }
+
+  // ---- cloud (Supabase) ----
+  var sb = null, session = null, role = null, canSave = false, canEdit = false;
+  try{
+    if(window.supabase && window.supabase.createClient && CFG.supabaseUrl && CFG.supabaseKey)
+      sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce", storageKey:"resinate-auth"}});
+  }catch(e){ sb = null; }
+
+  function showMsg(id, kind, text){ var m=$(id); m.hidden=false; m.className="msg "+kind; m.textContent=text; }
+
+  // ---- checkout ----
+  $("poCopy").addEventListener("click", function(){
+    var text = "Resinate order\nName: "+$("poName").value.trim()+"\nContact: "+$("poContact").value.trim()+"\nCollection: "+$("poPickup").value+"\n"+cartText()+($("poNotes").value.trim()?"\nNotes: "+$("poNotes").value.trim():"");
+    copyText(text, $("poCopy"), $("cart"));
+  });
+
+  function showPayNow(ref, name, price, paidMethod){
+    var box = $("payNow"); box.hidden = false;
+    var c = contactLinks();
+    var ask = c.length ? '<p class="muted">Questions? '+c.join(" · ")+'</p>' : "";
+    var head = '<span class="eyebrow">Order '+esc(ref)+' placed</span>';
+    if(paidMethod){
+      box.innerHTML = head+'<div class="amount num">'+money(price)+'</div><p><span class="pill ok">Paid · '+esc(paidMethod)+'</span> Thanks, '+esc(name)+'. The order is in the dashboard.</p>';
+    } else if(price==null){
+      box.innerHTML = head+'<p>Thanks, '+esc(name)+'! We\'ll confirm the final price with you, then you can pay. Keep this reference: <b id="pnRef">'+esc(ref)+'</b> <button type="button" class="copy" data-copy="pnRef">Copy</button></p>'+ask;
+    } else {
+      box.innerHTML = head+'<p>Thanks, '+esc(name)+'!</p><span class="muted">Amount to pay</span><div class="amount num">'+money(price)+'</div>'+
+        (hasPay() ? kvHtml(payRows(ref),"pn")+'<p class="muted">Use the reference in the payment description so we can match it.'+(pay.note?" "+esc(pay.note):"")+'</p>'
+                  : '<p>Reference: <b id="pnRef">'+esc(ref)+'</b> <button type="button" class="copy" data-copy="pnRef">Copy</button></p><p class="muted">We\'ll send our payment details when we confirm your order.</p>')+ask;
+    }
+    if(!paidMethod && ref.indexOf("?")<0) box.innerHTML += '<p class="muted" style="font-size:.9rem">You can check this order anytime under <a href="#track">Track order</a>.</p>';
+    box.scrollIntoView({block:"nearest"});
+  }
+
+  function offlineOrder(why){
+    var c = contactLinks();
+    showMsg("poMsg","err", why+" Copy your order and send it to us"+(c.length?"":" or show it at our stall")+", and we'll confirm it.");
+    if(c.length){ var m=$("poMsg"); var s=document.createElement("span"); s.innerHTML=" "+c.join(" · "); m.appendChild(s); }
+    $("poCopy").hidden = false;
+  }
+
+  $("poForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var name=$("poName").value.trim(), contact=$("poContact").value.trim();
+    if(!cart.length){ showMsg("poMsg","err","Your order is empty. Build a piece and press Add to order first."); return; }
+    if(!name || !contact){ showMsg("poMsg","err","Add a name and a way to contact you so we can confirm your order."); (name?$("poContact"):$("poName")).focus(); return; }
+    if($("poWebsite").value){ showPayNow("RSN-?????", name, null, ""); return; } // a bot filled the hidden field
+    if(!sb || dbState==="missing"){ offlineOrder("Online ordering isn't available right now."); return; }
+    var q = quoteCart(cart);
+    var fixed = !q.open.length && q.lo===q.hi;
+    var paidMethod = canSave ? $("poPaid").value : "";
+    if(paidMethod && !fixed){ showMsg("poMsg","err","This order doesn't have a fixed price yet. Save it as not paid, set the price in the dashboard, then record the payment."); return; }
+    var pickup = $("poPickup").value;
+    $("poSubmit").disabled = true; $("poMsg").hidden = true;
+    sb.rpc("resinate_place_order", {p_name:name, p_contact:contact, p_pickup:pickup, p_notes:$("poNotes").value.trim(), p_items:cart}).then(function(res){
+      if(res.error) throw res.error;
+      var row = Array.isArray(res.data) ? res.data[0] : res.data;
+      if(!row || !row.ref) throw new Error("No order reference came back");
+      if(!canSave) return {row:row};
+      var patch = {source:"team"};
+      if(paidMethod && row.price!=null){
+        patch.payments = [{amount:row.price, method:paidMethod, at:Date.now()}];
+        if(pickup==="Bought at the stall today") patch.status = "Collected";
+      }
+      return sb.from("resinate_orders").update(patch).eq("ref", row.ref).then(function(u){ return {row:row, patched:!u.error && !!patch.payments}; });
+    }).then(function(r){
+      if(!canSave) rememberOrder(r.row.ref, contact);
+      showPayNow(r.row.ref, name, r.row.price, r.patched ? paidMethod : "");
+      cart = []; saveDraft(); renderCart(); $("added").hidden = true;
+      $("poName").value=""; $("poContact").value=""; $("poNotes").value=""; $("poPaid").value="";
+      if(canSave) loadOrders();
+    }).catch(function(err){
+      offlineOrder("Your order didn't go through ("+errText(err)+").");
+    }).then(function(){ $("poSubmit").disabled=false; });
+  });
+
+  // ---- track an order ----
+  var TRACK_STEPS = ["New","Confirmed","Making","Ready","Collected"];
+  var TRACK_TEXT = {New:"We've got your order and will confirm it soon.", Confirmed:"Your order is confirmed.", Making:"We're pouring and curing your pieces.", Ready:"Your order is ready to collect!", Collected:"Collected. Enjoy your pieces!", Cancelled:"This order was cancelled. Get in touch if that's a surprise."};
+  function myOrders(){ try{ var a = JSON.parse(localStorage.getItem("resinate-mine")||"[]"); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
+  function rememberOrder(ref, contact){
+    var a = myOrders().filter(function(o){ return o.ref!==ref; }); a.unshift({ref:ref, contact:contact, at:Date.now()});
+    try{ localStorage.setItem("resinate-mine", JSON.stringify(a.slice(0,8))); }catch(e){}
+    renderRecent();
+  }
+  function renderRecent(){
+    var a = myOrders();
+    $("recent").hidden = !a.length;
+    $("recentList").innerHTML = a.map(function(o,i){
+      return '<button type="button" class="copy" data-recent="'+i+'">'+esc(o.ref)+' · '+esc(new Date(o.at).toLocaleDateString(undefined,{day:"numeric",month:"short"}))+'</button>';
+    }).join("");
+  }
+  $("recentList").addEventListener("click", function(e){
+    var b = e.target.closest("[data-recent]"); if(!b) return;
+    var o = myOrders()[+b.getAttribute("data-recent")]; if(!o) return;
+    $("trRef").value = o.ref; $("trContact").value = o.contact; checkOrder();
+  });
+  function checkOrder(){
+    var ref = $("trRef").value.trim().toUpperCase(), contact = $("trContact").value.trim();
+    if(!/^RSN-[A-Z0-9]{5}$/.test(ref)){ showMsg("trMsg","err","References look like RSN-AB12C. You'll find yours on the order confirmation."); return; }
+    if(contact.length<3){ showMsg("trMsg","err","Add the phone, email or Instagram you gave when you ordered."); return; }
+    if(!sb || dbState==="missing"){ showMsg("trMsg","err","Order tracking isn't available right now. Message us and we'll let you know."); return; }
+    $("trBtn").disabled = true; $("trMsg").hidden = true;
+    sb.rpc("resinate_order_status", {p_ref:ref, p_contact:contact}).then(function(r){
+      if(r.error) throw r.error;
+      var o = Array.isArray(r.data) ? r.data[0] : r.data;
+      if(!o){ $("trResult").hidden = true; showMsg("trMsg","err","We couldn't find an order with that reference and contact. Check both match what you used when ordering."); return; }
+      renderTrack(o);
+    }).catch(function(err){ showMsg("trMsg","err","Couldn't check the order ("+errText(err)+")."); })
+      .then(function(){ $("trBtn").disabled = false; });
+  }
+  function renderTrack(o){
+    var idx = TRACK_STEPS.indexOf(o.status);
+    var steps = o.status==="Cancelled" ? '<span class="now">Cancelled</span>' : TRACK_STEPS.map(function(st,i){ return '<span class="'+(i<idx?"done":i===idx?"now":"")+'">'+st+'</span>'; }).join("");
+    var pieces = (o.items||[]).map(function(it){ return "<li>"+((it.qty||1)>1?esc(it.qty)+" × ":"")+esc(itemSpec(it))+"</li>"; }).join("");
+    var owed = o.price!=null ? Math.max(0, o.price-(o.paid||0)) : 0;
+    var money_ = o.price==null
+      ? '<p>We\'re confirming the price'+(o.low?' (estimate '+esc((o.needs_quote?"from ":"")+range(o.low,o.high))+')':'')+'. We\'ll be in touch before you pay.</p>'
+      : '<div class="kv" style="grid-template-columns:auto 1fr"><span class="muted">Total</span><b class="num">'+money(o.price)+'</b><span class="muted">Paid</span><b class="num">'+money(o.paid||0)+'</b>'+(owed>0?'<span class="muted">Left to pay</span><b class="num">'+money(owed)+'</b>':'')+'</div>'+
+        (owed>0 && hasPay() && o.status!=="Cancelled" ? kvHtml(payRows(o.ref),"tr")+'<p class="muted">Use the reference in the payment description. Payments can take a day to show here.</p>' : '')+
+        (owed===0 ? '<p><span class="pill ok">Paid in full</span></p>' : '');
+    $("trResult").hidden = false;
+    $("trResult").innerHTML = '<span class="eyebrow">Order '+esc(o.ref)+' · placed '+esc(new Date(o.created_at).toLocaleDateString(undefined,{day:"numeric",month:"short"}))+'</span>'+
+      '<div class="track">'+steps+'</div><p>'+esc(TRACK_TEXT[o.status]||"")+'</p><ul style="margin:0;padding-left:1.1em">'+pieces+'</ul>'+money_;
+  }
+  $("trackForm").addEventListener("submit", function(e){ e.preventDefault(); checkOrder(); });
+  renderRecent();
+
+  // ---- back from an emailed sign-in link: show the dashboard and tidy the address ----
+  (function(){
+    var q = new URLSearchParams(location.search);
+    if(q.has("code") || q.has("error_description")){
+      if(q.has("error_description")) setTimeout(function(){ toast("Sign-in link didn't work: "+q.get("error_description")); }, 300);
+      setTimeout(function(){ history.replaceState(null, "", location.pathname+"#dashboard"); applyView(); }, 1500);
+      if(location.hash!=="#dashboard") location.hash = "dashboard";
+    }
+  })();
+
+  // ---- views ----
+  function applyView(){
+    var dash = location.hash==="#dashboard";
+    document.body.setAttribute("data-view", dash?"dashboard":"shop");
+    $("dashLink").setAttribute("aria-current", dash?"page":"false");
+    if(dash){ scrollTo(0,0); if(canSave) loadOrders(); }
+  }
+  addEventListener("hashchange", function(){
+    var wasDash = document.body.getAttribute("data-view")==="dashboard";
+    applyView();
+    if(wasDash && location.hash!=="#dashboard"){ var t=document.querySelector(location.hash||"#top"); if(t) t.scrollIntoView(); }
+  });
+
+  function applyAccess(){
+    $("poSubmit").textContent = canSave ? "Save order" : "Place order";
+    $("dashLink").hidden = !canSave;
+    document.querySelectorAll(".team-only").forEach(function(el){ el.hidden = !canSave; });
+    document.querySelectorAll(".team-opt").forEach(function(el){ el.hidden = !canSave; el.disabled = !canSave; });
+    if(!canSave && $("poPickup").selectedOptions[0] && $("poPickup").selectedOptions[0].disabled) $("poPickup").selectedIndex = 0;
+    var signedIn = !!session;
+    $("signin").hidden = signedIn || !sb;
+    $("noCloud").hidden = !!sb;
+    $("notStaff").hidden = !(signedIn && !canSave && dbState!=="missing");
+    $("setupBox").hidden = dbState!=="missing";
+    if(signedIn){
+      var em = (session.user && session.user.email || "").toLowerCase();
+      $("nsEmail").textContent = em;
+      $("nsSql").textContent = "insert into public.resinate_staff (email, role) values ('"+em.replace(/'/g,"''")+"', 'editor')\n  on conflict (email) do update set role = excluded.role;";
+    }
+    $("teamSec").hidden = !canEdit;
+    $("dashBody").hidden = !canSave;
+    $("whoBox").hidden = !signedIn;
+    $("whoami").textContent = signedIn ? (session.user && session.user.email || "") + (role ? " · "+role : "") : "";
+    $("settingsSec").hidden = !canEdit;
+    $("pricesSec").hidden = !canEdit;
+    $("upForm").hidden = !canEdit;
+    renderGallery(); renderStart();
+  }
+
+  // ---- team sign-in ----
+  var siEmail = "";
+  $("siEmailForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var em = $("siEmail").value.trim().toLowerCase();
+    if(!/^\S+@\S+\.\S+$/.test(em)){ showMsg("siMsg","err","Enter your email address, like you@example.com."); return; }
+    $("siSend").disabled = true;
+    sb.auth.signInWithOtp({email:em, options:{shouldCreateUser:true, emailRedirectTo:location.origin+location.pathname}}).then(function(r){
+      if(r.error) throw r.error;
+      siEmail = em; $("siEmailForm").hidden = true; $("siCodeForm").hidden = false;
+      showMsg("siMsg","ok","We emailed a sign-in link to "+em+". It can take a minute; check your spam folder too.");
+      setTimeout(function(){ $("siCode").focus(); }, 30);
+    }).catch(function(err){ showMsg("siMsg","err","Couldn't send the code ("+errText(err)+")."); })
+      .then(function(){ $("siSend").disabled = false; });
+  });
+  $("siCodeForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var code = $("siCode").value.replace(/\D/g,"");
+    if(code.length<6){ showMsg("siMsg","err","Enter the code from the email."); return; }
+    $("siVerify").disabled = true;
+    sb.auth.verifyOtp({email:siEmail, token:code, type:"email"}).then(function(r){
+      if(r.error) throw r.error;
+      $("siMsg").hidden = true; $("siCode").value = "";
+    }).catch(function(err){ showMsg("siMsg","err","That code didn't work ("+errText(err)+"). Check it, or send a new one."); })
+      .then(function(){ $("siVerify").disabled = false; });
+  });
+  $("siBack").addEventListener("click", function(){ $("siCodeForm").hidden = true; $("siEmailForm").hidden = false; $("siMsg").hidden = true; });
+  function signOut(){ if(sb) sb.auth.signOut().then(function(){ toast("Signed out"); }); }
+  $("signOut").addEventListener("click", signOut);
+  $("signOut2").addEventListener("click", signOut);
+
+  function afterAuth(){
+    var ask = session ? sb.rpc("resinate_my_role") : Promise.resolve({data:null});
+    return Promise.resolve(ask).then(function(r){
+      if(r && r.error && isMissing(r.error)) dbState = "missing";
+      role = (r && !r.error) ? r.data : null;
+    }, function(){ role = null; }).then(function(){
+      canSave = !!role; canEdit = role==="editor";
+      if(!canSave){ orders = []; }
+      applyAccess(); fillSettings(); fillPrices();
+      liveOrders(canSave);
+      if(canSave) loadOrders();
+      if(canEdit) loadTeam();
+    });
+  }
+
+  // ---- connection state ----
+  var dbState = "unknown"; // "ok" once the Resinate tables answer, "missing" when the project has no Resinate tables
+  function isMissing(err){
+    var c = err && err.code || "", m = err && err.message || "";
+    return c==="PGRST205" || c==="PGRST202" || c==="42P01" || c==="42883" || /schema cache|does not exist|Could not find/i.test(m);
+  }
+  (function(){
+    var m = /^https:\/\/([a-z0-9]+)\.supabase\.co/i.exec(CFG.supabaseUrl||"");
+    var ref = m ? m[1] : "";
+    $("projRef").textContent = ref || (CFG.supabaseUrl || "none set");
+    var link = ref ? "https://supabase.com/dashboard/project/"+ref+"/sql/new" : "https://supabase.com/dashboard";
+    $("sqlEditorLink").href = link; $("sqlEditorLink2").href = link;
+  })();
+  var setupSql = null;
+  $("copySetupSql").addEventListener("click", function(){
+    var btn = this;
+    (setupSql ? Promise.resolve(setupSql) : fetch("supabase/setup.sql").then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); }))
+      .then(function(t){ setupSql = t; copyText(t, btn, null); })
+      .catch(function(){ toast("Couldn't load the SQL here. Open supabase/setup.sql on GitHub and copy it from there."); });
+  });
+
+  // ---- live updates: new and changed orders arrive without reloading ----
+  var channel = null, liveTimer = null;
+  function liveOrders(on){
+    if(!sb) return;
+    if(!on){ if(channel){ sb.removeChannel(channel); channel = null; } return; }
+    if(channel) return;
+    channel = sb.channel("resinate-orders").on("postgres_changes", {event:"*", schema:"public", table:"resinate_orders"}, function(payload){
+      if(payload.eventType==="INSERT" && payload.new && payload.new.name) toast("New order from "+payload.new.name+" ("+payload.new.ref+")");
+      clearTimeout(liveTimer); liveTimer = setTimeout(loadOrders, 400);
+    }).subscribe();
+  }
+
+  // ---- getting started checklist (editors) ----
+  var team = [];
+  function renderStart(){
+    if(!canEdit){ $("startBox").hidden = true; return; }
+    var hidden = false; try{ hidden = localStorage.getItem("resinate-start-hidden")==="1"; }catch(e){}
+    var items = [
+      [true, "Database connected and you're an editor"],
+      [hasPay(), "Add your PayID or bank details under Payment details, so customers can pay"],
+      [team.length>1, "Add your teammates in the Team section"],
+      [photos.length>0, "Upload a photo of a finished piece for the Our work gallery"],
+      [contactLinks().length>0, "Put your Instagram, email or phone in resinate/config.js so customers can reach you"]
+    ];
+    var left = items.filter(function(x){ return !x[0]; }).length;
+    $("startBox").hidden = hidden || !left;
+    $("startList").innerHTML = items.map(function(x){ return '<li class="'+(x[0]?"ok":"")+'"><span>'+esc(x[1])+'</span></li>'; }).join("");
+  }
+  $("startHide").addEventListener("click", function(){ try{ localStorage.setItem("resinate-start-hidden","1"); }catch(e){} $("startBox").hidden = true; });
+
+  // ---- team (editors) ----
+  function loadTeam(){
+    sb.from("resinate_staff").select("email,role,added_at").order("added_at").then(function(r){
+      if(r.error) return;
+      team = r.data; renderTeam(); renderStart();
+    });
+  }
+  var confirmMem = null;
+  function renderTeam(){
+    var me = (session && session.user && session.user.email || "").toLowerCase();
+    $("teamList").innerHTML = team.map(function(m){
+      var mine = m.email===me;
+      return '<div class="mem"><b>'+esc(m.email)+(mine?' <span class="muted">(you)</span>':'')+'</b>'+
+        '<select data-role="'+esc(m.email)+'" aria-label="Role for '+esc(m.email)+'"'+(mine?' disabled':'')+'><option value="staff"'+(m.role==="staff"?" selected":"")+'>Staff</option><option value="editor"'+(m.role==="editor"?" selected":"")+'>Editor</option></select>'+
+        (mine ? '' : confirmMem===m.email
+          ? '<button class="btn small danger" type="button" data-rmmem="'+esc(m.email)+'">Remove</button><button class="btn small ghost" type="button" data-keepmem="1">Keep</button>'
+          : '<button class="btn small ghost" type="button" data-askmem="'+esc(m.email)+'">Remove</button>')+'</div>';
+    }).join("");
+  }
+  $("teamList").addEventListener("change", function(e){
+    var em = e.target.getAttribute("data-role"); if(!em) return;
+    sb.from("resinate_staff").update({role:e.target.value}).eq("email", em).then(function(r){ if(r.error) throw r.error; toast(em+" is now "+e.target.value); loadTeam(); })
+      .catch(function(err){ toast("Role didn't change ("+errText(err)+")."); loadTeam(); });
+  });
+  $("teamList").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return; var em;
+    if((em=b.getAttribute("data-askmem"))){ confirmMem = em; renderTeam(); }
+    else if(b.getAttribute("data-keepmem")){ confirmMem = null; renderTeam(); }
+    else if((em=b.getAttribute("data-rmmem"))){
+      confirmMem = null;
+      sb.from("resinate_staff").delete().eq("email", em).then(function(r){ if(r.error) throw r.error; toast(em+" removed from the team"); loadTeam(); })
+        .catch(function(err){ toast("Couldn't remove them ("+errText(err)+")."); });
+    }
+  });
+  $("teamForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var em = $("tmEmail").value.trim().toLowerCase();
+    if(!/^\S+@\S+\.\S+$/.test(em)){ showMsg("tmMsg","err","Enter their email address, like sam@example.com."); return; }
+    sb.from("resinate_staff").upsert({email:em, role:$("tmRole").value}).then(function(r){
+      if(r.error) throw r.error;
+      showMsg("tmMsg","ok",em+" can now sign in at this page's Team sign-in with that email."); $("tmEmail").value=""; loadTeam();
+    }).catch(function(err){ showMsg("tmMsg","err","Couldn't add them ("+errText(err)+")."); });
+  });
+
+  // ---- dashboard data ----
+  var orders = [];
+  var confirmDel = null;
+  function fromRow(r){ var o = Object.assign({}, r); o.id = r.ref; o.createdAt = Date.parse(r.created_at); o.needsQuote = r.needs_quote; return o; }
+  var loading = null;
+  function loadOrders(){
+    if(!sb || !canSave) return Promise.resolve();
+    if(loading) return loading;
+    loading = sb.from("resinate_orders").select("*").order("created_at",{ascending:false}).limit(2000).then(function(r){
+      loading = null;
+      if(r.error){ $("orders").innerHTML = '<div class="empty">Orders couldn\'t load ('+esc(errText(r.error))+'). If this is a new setup, run supabase/setup.sql in Supabase.</div>'; return; }
+      orders = r.data.map(fromRow);
+      $("lastSync").textContent = "Updated "+new Date().toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+      renderDash();
+    }, function(){ loading = null; });
+    return loading;
+  }
+  setInterval(function(){ if(canSave && document.body.getAttribute("data-view")==="dashboard" && !document.hidden && !$("orders").contains(document.activeElement)) loadOrders(); }, 60000);
+  $("refreshBtn").addEventListener("click", function(){ loadOrders().then(function(){ toast("Orders up to date"); }); });
+
+  function itemsOf(o){ return Array.isArray(o.items) ? o.items : []; }
+  function paidOf(o){ return (o.payments||[]).reduce(function(a,p){return a+(p.amount||0)},0); }
+  function owedOf(o){ return o.price!=null ? Math.max(0,o.price-paidOf(o)) : 0; }
+  function payState(o){
+    if(o.status==="Cancelled") return {k:"mute", t:"Cancelled"};
+    if(o.price==null) return {k:"mute", t:"Needs price"};
+    var p = paidOf(o);
+    if(p>=o.price) return {k:"ok", t:"Paid"};
+    if(p>0) return {k:"warn", t:"Part paid"};
+    return {k:"bad", t:"Unpaid"};
+  }
+  function isOpen(o){ return o.status!=="Collected" && o.status!=="Cancelled"; }
+  function orderSpec(o){ return itemsOf(o).map(function(it){ return ((it.qty||1)>1?(it.qty)+" × ":"")+itemSpec(it); }).join("; "); }
+
+  function renderDash(){
+    var live = orders.filter(function(o){return o.status!=="Cancelled"});
+    var received = 0, owed = 0;
+    live.forEach(function(o){ received+=paidOf(o); owed+=owedOf(o); });
+    $("kPaid").textContent = money(received);
+    $("kOwed").textContent = money(owed);
+    $("kOpen").textContent = orders.filter(isOpen).length;
+    $("kQuote").textContent = orders.filter(function(o){return isOpen(o) && o.price==null}).length;
+    drawWeeks(); drawSizes(live); renderToMake();
+    renderOrders();
+  }
+
+  function renderToMake(){
+    var c = {S:0,M:0,L:0,XL:0,print:0,sparkle:0,led:0,custom:0};
+    orders.forEach(function(o){
+      if(["New","Confirmed","Making"].indexOf(o.status)<0) return;
+      itemsOf(o).forEach(function(it){ var n=it.qty||1; c[it.size]=(c[it.size]||0)+n; if(it.print) c.print+=n; if(it.sparkle) c.sparkle+=n; if(it.led) c.led+=n; if(it.custom) c.custom+=n; });
+    });
+    $("makegrid").innerHTML = [["S","Small"],["M","Medium"],["L","Large"],["XL","XL"],["print","Printed designs"],["sparkle","With sparkle"],["led","LEDs"],["custom","Custom inclusions"]].map(function(x){
+      return '<div><b>'+c[x[0]]+'</b><span>'+x[1]+'</span></div>';
+    }).join("");
+  }
+
+  function messageFor(o){
+    var first = String(o.name||"").split(" ")[0] || "there";
+    var owed = owedOf(o), ref = o.ref;
+    if(o.status==="Ready") return "Hi "+first+", your Resinate order "+ref+" is ready to collect!"+(owed>0?" There's "+money(owed)+" left to pay"+(payLine()?" to "+payLine()+" with reference "+ref:"")+".":"")+" Thanks!";
+    if(o.price==null) return "Hi "+first+", thanks for your Resinate order ("+ref+": "+orderSpec(o)+"). We'll confirm the final price soon, then send payment details.";
+    if(owed>0) return "Hi "+first+", thanks for your Resinate order ("+ref+": "+orderSpec(o)+"). The total is "+money(o.price)+(paidOf(o)>0?", with "+money(owed)+" still to pay":"")+"."+(payLine()?" Please pay to "+payLine()+" and use "+ref+" as the reference.":"")+(pay.note?" "+pay.note:"");
+    return "Hi "+first+", we've received your payment for Resinate order "+ref+". Thank you! We'll let you know when it's ready.";
+  }
+
+  function renderOrders(){
+    var f = $("filter").value, q = $("search").value.trim().toLowerCase();
+    var list = orders.filter(function(o){
+      var ps = payState(o).t;
+      if(f==="open" && !isOpen(o)) return false;
+      if(f==="unpaid" && !(ps==="Unpaid"||ps==="Part paid")) return false;
+      if(f==="quote" && !(isOpen(o) && o.price==null)) return false;
+      if(f==="paid" && ps!=="Paid") return false;
+      if((f==="Ready"||f==="Collected"||f==="Cancelled") && o.status!==f) return false;
+      if(q && (String(o.name)+" "+String(o.ref)+" "+String(o.contact)).toLowerCase().indexOf(q)<0) return false;
+      return true;
+    });
+    if(!list.length){
+      $("orders").innerHTML = '<div class="empty">'+(orders.length?"No orders match this filter.":"No orders yet. Orders placed on the shop, by customers or by the team, show up here.")+'</div>';
+      return;
+    }
+    $("orders").innerHTML = list.map(function(o){
+      var id = esc(o.id), ps = payState(o), paid = paidOf(o), owe = owedOf(o);
+      var when = o.createdAt ? new Date(o.createdAt).toLocaleDateString(undefined,{day:"numeric",month:"short"}) : "";
+      var priceLine = o.price!=null ? '<b>'+money(o.price)+'</b>' : '<b class="muted">'+esc((o.needsQuote?"from ":"")+range(o.low||0,o.high||0))+'</b>';
+      var hist = (o.payments||[]).map(function(p){ return money(p.amount)+" "+esc(p.method)+(p.at?" on "+new Date(p.at).toLocaleDateString(undefined,{day:"numeric",month:"short"}):""); }).join(" · ");
+      return '<div class="order" data-s="'+esc(o.status)+'">'+
+        '<div style="min-width:0"><div class="ref">'+id+(when?' · '+when:'')+' · '+esc(o.status)+(o.source==="online"?' · online':'')+'</div>'+
+        '<div class="who">'+esc(o.name)+' <span class="spec">· '+esc(o.contact)+'</span></div>'+
+        '<div class="spec">'+esc(orderSpec(o))+'</div>'+
+        (o.notes?'<div class="spec">Notes: '+esc(o.notes)+'</div>':'')+
+        '<div class="spec">'+esc(o.pickup||"")+'</div></div>'+
+        '<div class="money">'+priceLine+'<span class="pill '+ps.k+'">'+ps.t+'</span>'+(paid?'<span class="spec">'+money(paid)+' paid</span>':'')+'</div>'+
+        (hist?'<div class="hist">Payments: '+hist+'</div>':'')+
+        '<div class="acts">'+
+          '<label class="spec" for="st-'+id+'">Status</label><select id="st-'+id+'" data-status="'+id+'">'+
+            STATUSES.map(function(s){return '<option'+(s===o.status?" selected":"")+'>'+s+'</option>'}).join("")+'</select>'+
+          '<label class="spec" for="pr-'+id+'">Price $</label><input type="text" inputmode="decimal" id="pr-'+id+'" value="'+(o.price!=null?(o.price/100).toFixed(2):"")+'" placeholder="set"><button class="btn small ghost" data-price="'+id+'">Set price</button>'+
+          (o.price!=null && owe>0 && o.status!=="Cancelled" ?
+            '<label class="spec" for="pa-'+id+'">Payment $</label><input type="text" inputmode="decimal" id="pa-'+id+'" value="'+(owe/100).toFixed(2)+'">'+
+            '<select id="pm-'+id+'" aria-label="Payment method">'+METHODS.map(function(m){return '<option>'+m+'</option>'}).join("")+'</select>'+
+            '<button class="btn small" data-pay="'+id+'">Record payment</button>' : '')+
+          '<button class="btn small ghost" data-msg="'+id+'">Copy message to customer</button>'+
+          (confirmDel===o.id
+            ? '<span class="spec">Delete this order for good?</span><button class="btn small danger" data-del="'+id+'">Delete</button><button class="btn small ghost" data-cancel="1">Keep</button>'
+            : '<button class="btn small ghost" data-ask="'+id+'">Delete</button>')+
+        '</div></div>';
+    }).join("");
+  }
+  $("filter").addEventListener("change", renderOrders);
+  $("search").addEventListener("input", renderOrders);
+
+  function byId(id){ return orders.filter(function(o){return o.id===id})[0]; }
+  function patchOrder(id, patch, okText, what){
+    return sb.from("resinate_orders").update(patch).eq("ref", id).then(function(r){
+      if(r.error) throw r.error;
+      toast(okText); return loadOrders();
+    }).catch(function(err){ toast(what+" didn't save ("+errText(err)+")."); });
+  }
+
+  $("orders").addEventListener("change", function(e){
+    var id = e.target.getAttribute("data-status");
+    if(id) patchOrder(id, {status:e.target.value}, "Status updated", "Status");
+  });
+  $("orders").addEventListener("click", function(e){
+    var t = e.target.closest("button"); if(!t) return;
+    var id;
+    if((id = t.getAttribute("data-price"))){
+      var c = cents($("pr-"+id).value);
+      if(!(c>0)){ toast("Enter the agreed price in dollars, like 14.99."); return; }
+      patchOrder(id, {price:c}, "Price set to "+money(c), "Price");
+    } else if((id = t.getAttribute("data-pay"))){
+      var amt = cents($("pa-"+id).value), o = byId(id);
+      if(!(amt>0)){ toast("Enter the payment amount in dollars."); return; }
+      var pays = (o.payments||[]).slice(); pays.push({amount:amt, method:$("pm-"+id).value, at:Date.now()});
+      t.disabled = true;
+      patchOrder(id, {payments:pays}, money(amt)+" recorded", "Payment");
+    } else if((id = t.getAttribute("data-msg"))){
+      copyText(messageFor(byId(id)), t, null);
+    } else if((id = t.getAttribute("data-ask"))){ confirmDel = id; renderOrders(); }
+    else if(t.getAttribute("data-cancel")){ confirmDel = null; renderOrders(); }
+    else if((id = t.getAttribute("data-del"))){
+      confirmDel = null;
+      sb.from("resinate_orders").delete().eq("ref", id).then(function(r){ if(r.error) throw r.error; toast("Order deleted"); return loadOrders(); })
+        .catch(function(err){ toast("Couldn't delete ("+errText(err)+")."); });
+    }
+  });
+
+  // ---- export ----
+  function csvCell(v){ v = String(v==null?"":v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+  $("exportBtn").addEventListener("click", function(){
+    var head = ["Reference","Date","Name","Contact","Collection","Pieces","Price","Paid","Owed","Payment","Status","Source","Notes"];
+    var rows = orders.map(function(o){
+      return [o.ref, o.createdAt?new Date(o.createdAt).toISOString().slice(0,10):"", o.name, o.contact, o.pickup, orderSpec(o),
+        o.price!=null?(o.price/100).toFixed(2):"", (paidOf(o)/100).toFixed(2), (owedOf(o)/100).toFixed(2), payState(o).t, o.status, o.source, o.notes];
+    });
+    var csv = [head].concat(rows).map(function(r){ return r.map(csvCell).join(","); }).join("\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));
+    a.download = "resinate-orders-"+new Date().toISOString().slice(0,10)+".csv";
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+
+  // ---- charts (single series each: no legend; latest/each value labelled; hover adds detail) ----
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent){ var n=document.createElementNS(NS,tag); for(var k in attrs) n.setAttribute(k, attrs[k]); if(parent) parent.appendChild(n); return n; }
+  function tipFor(chart){
+    var t = chart.querySelector(".tip");
+    if(!t){ t=document.createElement("div"); t.className="tip"; t.hidden=true; t.appendChild(document.createElement("b")); t.appendChild(document.createElement("span")); chart.appendChild(t); }
+    return t;
+  }
+  function bindTip(g, chart, value, label){
+    var tip = tipFor(chart);
+    function show(){
+      var cr = chart.getBoundingClientRect(), br = g.querySelector(".bar").getBoundingClientRect();
+      tip.firstChild.textContent = value; tip.lastChild.textContent = label;
+      tip.style.left = (br.left - cr.left + br.width/2)+"px"; tip.style.top = (br.top - cr.top - 4)+"px"; tip.hidden = false;
+    }
+    function hide(){ tip.hidden = true; }
+    g.addEventListener("pointerenter", show); g.addEventListener("pointerleave", hide);
+    g.addEventListener("focus", show); g.addEventListener("blur", hide);
+  }
+  function roundTopRect(x,y,w,h,r){
+    if(h<=0) return "M0,0";
+    r = Math.min(r, w/2, h);
+    return "M"+x+","+(y+h)+"V"+(y+r)+"Q"+x+","+y+" "+(x+r)+","+y+"H"+(x+w-r)+"Q"+(x+w)+","+y+" "+(x+w)+","+(y+r)+"V"+(y+h)+"Z";
+  }
+  function weekStart(ts){ var d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d.getTime(); }
+  function niceStep(raw){
+    if(!(raw>0)) return 500;
+    var p = Math.pow(10, Math.floor(Math.log10(raw))), n = raw/p;
+    return (n<=1?1:n<=2?2:n<=5?5:10)*p;
+  }
+  function drawWeeks(){
+    var chart = $("chartWeeks"), plot = chart.querySelector(".plot"); plot.innerHTML = "";
+    var now = weekStart(Date.now()), weeks = [];
+    for(var i=7;i>=0;i--){ var d=new Date(now); d.setDate(d.getDate()-i*7); weeks.push({start:d.getTime(), sum:0}); }
+    orders.forEach(function(o){ if(o.status==="Cancelled") return; (o.payments||[]).forEach(function(p){
+      var ws = weekStart(p.at||o.createdAt||0); weeks.forEach(function(w){ if(w.start===ws) w.sum += p.amount||0; });
+    }); });
+    var max = Math.max.apply(null, weeks.map(function(w){return w.sum}));
+    var VW=520, VH=200, L=44, B=26, T=18, R=6, ph=VH-B-T, pw=VW-L-R;
+    var step = niceStep(max/3), top = Math.max(step*3, step*Math.ceil(max/step));
+    var svg = el("svg",{viewBox:"0 0 "+VW+" "+VH, role:"img", "aria-label":"Bar chart of money received per week over the last 8 weeks"}, plot);
+    for(var v=0; v<=top; v+=step){
+      var y = T + ph - (v/top)*ph;
+      el("line",{x1:L, x2:VW-R, y1:y, y2:y, "class":"grid"}, svg);
+      el("text",{x:L-6, y:y+4, "text-anchor":"end"}, svg).textContent = "$"+Math.round(v/100);
+    }
+    var bw = pw/weeks.length, barW = Math.min(36, bw*0.62);
+    weeks.forEach(function(w, i){
+      var x = L + i*bw + (bw-barW)/2, h = top ? (w.sum/top)*ph : 0, y = T+ph-h;
+      var g = el("g",{tabindex:"0"}, svg);
+      el("rect",{x:L+i*bw, y:T, width:bw, height:ph, "class":"hit"}, g);
+      el("path",{d: roundTopRect(x,y,barW,h,4), "class":"bar"}, g);
+      var dlabel = new Date(w.start).toLocaleDateString(undefined,{day:"numeric",month:"short"});
+      el("text",{x:L+i*bw+bw/2, y:VH-8, "text-anchor":"middle"}, svg).textContent = dlabel;
+      if(i===weeks.length-1 && w.sum>0) el("text",{x:x+barW/2, y:y-7, "text-anchor":"middle", "class":"val"}, svg).textContent = money(w.sum);
+      bindTip(g, chart, money(w.sum), "Week of "+dlabel);
+    });
+  }
+  function drawSizes(live){
+    var chart = $("chartSizes"), plot = chart.querySelector(".plot"); plot.innerHTML = "";
+    var counts = SIZES.map(function(s){ return {k:s.k, name:s.name, n:0}; });
+    live.forEach(function(o){ itemsOf(o).forEach(function(it){ counts.forEach(function(c){ if(c.k===it.size) c.n += it.qty||1; }); }); });
+    var max = Math.max(1, Math.max.apply(null, counts.map(function(c){return c.n})));
+    var VW=360, rowH=38, L=64, R=40, VH=counts.length*rowH+4;
+    var svg = el("svg",{viewBox:"0 0 "+VW+" "+VH, role:"img", "aria-label":"Bar chart of pieces ordered by size"}, plot);
+    counts.forEach(function(c, i){
+      var y = i*rowH + 8, h = rowH-16, w = (c.n/max)*(VW-L-R);
+      el("text",{x:L-8, y:y+h/2+4, "text-anchor":"end"}, svg).textContent = c.name;
+      var g = el("g",{tabindex:"0"}, svg);
+      el("rect",{x:L, y:i*rowH, width:VW-L, height:rowH, "class":"hit"}, g);
+      el("path",{"class":"bar", d: w>4 ? "M"+L+","+y+"H"+(L+w-4)+"Q"+(L+w)+","+y+" "+(L+w)+","+(y+4)+"V"+(y+h-4)+"Q"+(L+w)+","+(y+h)+" "+(L+w-4)+","+(y+h)+"H"+L+"Z" : "M0,0"}, g);
+      el("text",{x:L+w+6, y:y+h/2+4, "class":"val"}, svg).textContent = c.n;
+      bindTip(g, chart, c.n+(c.n===1?" piece":" pieces"), c.name);
+    });
+  }
+
+  // ---- prices form ----
+  var PRICE_FIELDS = [["pbS",["base","S"]],["pbM",["base","M"]],["pbL",["base","L"]],["pbXL",["base","XL"]],
+    ["ppS",["print","S"]],["ppM",["print","M"]],["ppL",["print","L"]],["ppXL",["print","XL"]],
+    ["pDye",["dye"]],["pSpLo",["sparkleLo"]],["pSpHi",["sparkleHi"]],["pSpXL",["sparkleXL"]],
+    ["pLedL",["led","L"]],["pLedXL",["led","XL"]],["pCustom",["customMin"]],["pBundle",["bundleOff"]]];
+  function getPath(o,p){ return p.length===1 ? o[p[0]] : o[p[0]][p[1]]; }
+  function fillPrices(){ PRICE_FIELDS.forEach(function(f){ var v=getPath(P,f[1]); $(f[0]).value = v==null ? "" : (v/100).toFixed(2); }); }
+  $("priceReset").addEventListener("click", function(){ fillPrices(); $("priceMsg").hidden = true; });
+  $("priceForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var out = JSON.parse(JSON.stringify(P)), bad = null;
+    PRICE_FIELDS.forEach(function(f){
+      var raw = $(f[0]).value.trim(), c = cents(raw), p = f[1];
+      if(f[0]==="pSpXL" && raw===""){ out.sparkleXL = null; return; }
+      if(f[0]==="pBundle" && raw===""){ out.bundleOff = 0; return; }
+      if(!(c>=0)){ bad = bad || f[0]; return; }
+      if(p.length===1) out[p[0]] = c; else out[p[0]][p[1]] = c;
+    });
+    if(bad){ showMsg("priceMsg","err","One of the prices isn't a number. Use dollars, like 9.99."); $(bad).focus(); return; }
+    if(out.sparkleHi < out.sparkleLo){ showMsg("priceMsg","err","Sparkle \"up to\" must be at least the \"from\" price."); $("pSpHi").focus(); return; }
+    sb.from("resinate_settings").upsert({id:"prices", data:out, updated_at:new Date().toISOString()}).then(function(r){
+      if(r.error) throw r.error;
+      P = mergePrices(out); renderAll(); if(orders.length) renderDash();
+      showMsg("priceMsg","ok","Saved. Visitors see these prices the next time they open the shop.");
+    }).catch(function(err){ showMsg("priceMsg","err","Didn't save ("+errText(err)+"). Only editors can change prices."); });
+  });
+
+  // ---- payment settings form ----
+  function fillSettings(){ $("sPayid").value = pay.payid||""; $("sName").value = pay.name||""; $("sBsb").value = pay.bsb||""; $("sAcct").value = pay.acct||""; $("sNote").value = pay.note||""; }
+  $("setForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var data = {payid:$("sPayid").value.trim(), name:$("sName").value.trim(), bsb:$("sBsb").value.trim(), acct:$("sAcct").value.trim(), note:$("sNote").value.trim()};
+    sb.from("resinate_settings").upsert({id:"payment", data:data, updated_at:new Date().toISOString()}).then(function(r){
+      if(r.error) throw r.error;
+      pay = data; renderPayDetails(); renderStart();
+      showMsg("setMsg","ok","Saved. Customers now see these details.");
+    }).catch(function(err){ showMsg("setMsg","err","Didn't save ("+errText(err)+"). Only editors can change payment details."); });
+  });
+
+  // ---- gallery ----
+  var photos = [], confirmPhoto = null;
+  function photoUrl(path){ return sb ? sb.storage.from("resinate").getPublicUrl(path).data.publicUrl : ""; }
+  function loadPhotos(){
+    if(!sb) return;
+    sb.from("resinate_photos").select("*").order("created_at",{ascending:false}).then(function(r){ if(!r.error){ photos = r.data; renderGallery(); renderStart(); } });
+  }
+  function renderGallery(){
+    $("work").hidden = !(photos.length || canEdit);
+    if(!photos.length){ $("gallery").innerHTML = canEdit ? '<div class="empty" style="grid-column:1/-1">No photos yet. Upload your first finished piece below.</div>' : ""; return; }
+    $("gallery").innerHTML = photos.map(function(ph){
+      var del = canEdit ? (confirmPhoto===ph.id
+        ? '<span class="row"><button type="button" class="copy" data-pdel="'+esc(ph.id)+'">Remove</button><button type="button" class="copy" data-pkeep="1">Keep</button></span>'
+        : '<button type="button" class="copy" data-pask="'+esc(ph.id)+'">Remove</button>') : "";
+      return '<figure><img src="'+esc(photoUrl(ph.path))+'" alt="'+esc(ph.caption||"Resin piece")+'" loading="lazy"><figcaption><span>'+esc(ph.caption||"")+'</span>'+del+'</figcaption></figure>';
+    }).join("");
+  }
+  $("gallery").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    var id;
+    if((id=b.getAttribute("data-pask"))){ confirmPhoto=id; renderGallery(); }
+    else if(b.getAttribute("data-pkeep")){ confirmPhoto=null; renderGallery(); }
+    else if((id=b.getAttribute("data-pdel"))){
+      var ph = photos.filter(function(x){return x.id===id})[0]; confirmPhoto=null;
+      sb.from("resinate_photos").delete().eq("id", id).then(function(r){
+        if(r.error) throw r.error;
+        if(ph) sb.storage.from("resinate").remove([ph.path]);
+        toast("Photo removed"); loadPhotos();
+      }).catch(function(err){ toast("Couldn't remove it ("+errText(err)+")."); });
+    }
+  });
+  $("upForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var f = $("upFile").files[0];
+    if(!f){ showMsg("upMsg","err","Choose a photo first."); return; }
+    if(!/^image\//.test(f.type)){ showMsg("upMsg","err","That file isn't an image. Choose a JPG, PNG or similar."); return; }
+    if(f.size > 10*1024*1024){ showMsg("upMsg","err","That photo is over 10 MB. Choose a smaller one."); return; }
+    var ext = (f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,5) || "jpg";
+    var path = "gallery/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
+    $("upBtn").disabled = true; showMsg("upMsg","ok","Uploading…");
+    sb.storage.from("resinate").upload(path, f, {contentType:f.type, upsert:false}).then(function(r){
+      if(r.error) throw r.error;
+      return sb.from("resinate_photos").insert({path:path, caption:$("upCaption").value.trim()});
+    }).then(function(r){
+      if(r.error) throw r.error;
+      showMsg("upMsg","ok","Added to Our work."); $("upFile").value=""; $("upCaption").value=""; loadPhotos();
+    }).catch(function(err){ showMsg("upMsg","err","Upload didn't work ("+errText(err)+")."); })
+      .then(function(){ $("upBtn").disabled = false; });
+  });
+
+  // ---- start ----
+  drawWeeks(); drawSizes([]); renderToMake();
+  applyView(); applyAccess();
+  if(sb){
+    sb.from("resinate_settings").select("id,data").then(function(r){
+      if(r.error){ if(isMissing(r.error)){ dbState = "missing"; applyAccess(); } return; }
+      dbState = "ok";
+      r.data.forEach(function(row){
+        if(row.id==="prices") P = mergePrices(row.data);
+        if(row.id==="payment") pay = row.data || {};
+      });
+      renderAll(); renderPayDetails(); fillPrices(); fillSettings();
+    });
+    loadPhotos();
+    sb.auth.onAuthStateChange(function(ev, s){
+      session = s;
+      setTimeout(afterAuth, 0); // don't call Supabase from inside this callback
+    });
+  }
+
+  // ---- hero: an ocean-style resin pour with white lacing and gold flecks ----
+  var cv = $("pour"), ctx = cv.getContext("2d");
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var flecks = [];
+  for(var i=0;i<90;i++) flecks.push({x:Math.random(), y:Math.random(), r:Math.random()*1.8+0.5, p:Math.random()*6.28, gold:Math.random()<0.35});
+  var cellsArr = [];
+  for(var j=0;j<70;j++) cellsArr.push({u:Math.random(), band:Math.floor(Math.random()*3), r:Math.random()*0.012+0.004, off:(Math.random()-0.5)*0.03});
+  function tok(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function size(){ var r=cv.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,2); cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr); }
+  function mix(a,b,t){
+    var pa=parseInt(a.slice(1),16), pb=parseInt(b.slice(1),16);
+    var r=Math.round(((pa>>16)&255)*(1-t)+((pb>>16)&255)*t), g=Math.round(((pa>>8)&255)*(1-t)+((pb>>8)&255)*t), bl=Math.round((pa&255)*(1-t)+(pb&255)*t);
+    return "rgb("+r+","+g+","+bl+")";
+  }
+  function hex(v, fb){ return /^#[0-9a-f]{6}$/i.test(v) ? v : fb; }
+  function draw(t){
+    var w=cv.width, h=cv.height, resin=hex(tok("--resin"),"#0d6d70"), amber=hex(tok("--amber"),"#b86a07"), ink=hex(tok("--ink"),"#11282b");
+    var deep = mix(resin,"#04161a",0.55), light = mix(resin,"#ffffff",0.55), sand = mix(amber,"#f4e4c8",0.55);
+    ctx.clearRect(0,0,w,h);
+    var cx=w/2, cy=h/2, R=w*0.43;
+    ctx.save(); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.filter = "blur("+(w/40)+"px)";
+    ctx.beginPath(); ctx.ellipse(cx+w*0.02, cy+w*0.04, R, R*0.98, 0, 0, 6.283); ctx.fill(); ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.clip();
+    ctx.fillStyle = deep; ctx.fillRect(0,0,w,h);
+    var bands = [{c:resin, o:0.30}, {c:light, o:0.04}, {c:sand, o:-0.26}];
+    var phase = t*0.00018;
+    function edge(k, s){ return bands[k].o + 0.035*Math.sin(s*7 + phase + k*1.7) + 0.02*Math.sin(s*15 - phase*1.3 + k); }
+    function pt(s, off){
+      var ax = -0.75 + s*1.5, ux = Math.SQRT1_2, uy = -Math.SQRT1_2, nx = Math.SQRT1_2, ny = Math.SQRT1_2;
+      return [cx + (ax*ux + off*nx)*R*1.6, cy + (ax*uy + off*ny)*R*1.6];
+    }
+    bands.forEach(function(b, k){
+      ctx.beginPath();
+      for(var s=0;s<=1.0001;s+=0.02){ var p = pt(s, edge(k,s)); if(s===0) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]); }
+      var e1 = pt(1, -1.2), e0 = pt(0, -1.2);
+      ctx.lineTo(e1[0],e1[1]); ctx.lineTo(e0[0],e0[1]); ctx.closePath();
+      ctx.fillStyle = b.c; ctx.fill();
+      ctx.beginPath();
+      for(var s2=0;s2<=1.0001;s2+=0.02){ var q = pt(s2, edge(k,s2)+0.006); if(s2===0) ctx.moveTo(q[0],q[1]); else ctx.lineTo(q[0],q[1]); }
+      ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = w*0.009; ctx.lineJoin="round"; ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = w*0.022; ctx.stroke();
+    });
+    ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = Math.max(1,w/450);
+    cellsArr.forEach(function(c){
+      var p = pt(c.u, edge(c.band,c.u) + 0.025 + c.off);
+      ctx.beginPath(); ctx.arc(p[0], p[1], c.r*w, 0, 6.283); ctx.stroke();
+    });
+    flecks.forEach(function(f){
+      var tw = reduce ? 0.7 : 0.45 + 0.55*Math.abs(Math.sin(t*0.0016 + f.p));
+      ctx.fillStyle = f.gold ? "rgba(232,184,92,"+(0.55+0.4*tw)+")" : "rgba(255,255,255,"+(0.25+0.6*tw)+")";
+      ctx.beginPath(); ctx.arc(f.x*w, f.y*h, f.r*(w/420)*(f.gold?1.4:1), 0, 6.283); ctx.fill();
+    });
+    var hl = ctx.createRadialGradient(cx-R*0.35, cy-R*0.4, 0, cx-R*0.35, cy-R*0.4, R*0.9);
+    hl.addColorStop(0,"rgba(255,255,255,.38)"); hl.addColorStop(0.45,"rgba(255,255,255,.06)"); hl.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle = hl; ctx.fillRect(0,0,w,h);
+    ctx.restore();
+    ctx.strokeStyle = mix(ink, "#ffffff", 0.7); ctx.globalAlpha = .5; ctx.lineWidth = Math.max(1.5,w/160);
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  function loop(t){ if(document.body.getAttribute("data-view")!=="dashboard" && !document.hidden) draw(t); requestAnimationFrame(loop); }
+  size(); addEventListener("resize", function(){ size(); if(reduce) draw(0); });
+  addEventListener("hashchange", function(){ setTimeout(function(){ size(); if(reduce) draw(0); }, 0); });
+  if(reduce) draw(0); else requestAnimationFrame(loop);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){ if(reduce) draw(0); });
+})();
+</script>
+</body>
+</html>
