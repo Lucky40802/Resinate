@@ -1,33 +1,87 @@
--- Resinate: orders, team, settings and photos, for the shop's Supabase project.
+-- Resinate: accounts, roles, orders, settings and photos, for the shop's Supabase project.
 -- Paste this whole file into the project's SQL Editor and run it. It is safe to run again after an update.
 --
--- resinate_staff     who can open the dashboard, by sign-in email: 'staff' take orders and record payments,
---                    'editor' also change prices, payment details, photos and the team list.
--- resinate_settings  'prices' and 'payment'. Everyone can read them (the shop shows them); only editors change them.
--- resinate_orders    every order. Customers can't read or change orders: they place one only through
---                    resinate_place_order(), which prices it on the server from resinate_settings.
--- resinate_photos    the "Our work" gallery; the files live in the public storage bucket 'resinate'.
+-- resinate_profiles  one row per account (made automatically when someone signs up): name, contact, photo and role.
+--                    role is 'customer' or 'maker'. Makers open the dashboard. People can edit their own name,
+--                    contact and photo, but never their role: change roles here in the console only (see the end).
+-- resinate_staff     emails to make makers as soon as they sign up (console only; optional).
+-- resinate_settings  'prices' and 'payment'. Everyone can read them (the shop shows them); only makers change them.
+-- resinate_orders    every order. Customers place one only through resinate_place_order(), which prices it on the
+--                    server; a signed-in customer can read their own orders; makers read and change all of them.
+-- resinate_photos    the "Our work" gallery. Files live in the public storage bucket 'resinate', with profile
+--                    photos under avatars/<account id>/.
 
 create schema if not exists private;
 revoke all on schema private from public, anon;
 grant usage on schema private to authenticated;
 
--- ── team ─────────────────────────────────────────────────────────
+-- ── accounts and roles ───────────────────────────────────────────
+create table if not exists public.resinate_profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  email text not null default '',
+  display_name text not null default '' check (char_length(display_name) <= 80),
+  contact text not null default '' check (char_length(contact) <= 200),     -- phone, Instagram or email for orders
+  avatar_path text check (avatar_path is null or char_length(avatar_path) <= 300),
+  role text not null default 'customer' check (role in ('customer', 'maker')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.resinate_profiles enable row level security;
+revoke all on public.resinate_profiles from anon, authenticated;
+grant select on public.resinate_profiles to authenticated;
+grant update (display_name, contact, avatar_path, updated_at) on public.resinate_profiles to authenticated;  -- never role or email
+drop policy if exists "read your own profile" on public.resinate_profiles;
+create policy "read your own profile" on public.resinate_profiles for select to authenticated
+  using (id = (select auth.uid()));
+drop policy if exists "edit your own profile" on public.resinate_profiles;
+create policy "edit your own profile" on public.resinate_profiles for update to authenticated
+  using (id = (select auth.uid())) with check (id = (select auth.uid()));
+
+-- emails to make makers the moment they sign up. Console only: the website can't read or change it.
 create table if not exists public.resinate_staff (
   email text primary key check (email = lower(email) and position('@' in email) > 1),
-  role text not null default 'staff' check (role in ('staff', 'editor')),
+  role text not null default 'staff',
   added_at timestamptz not null default now()
 );
 alter table public.resinate_staff enable row level security;
 revoke all on public.resinate_staff from anon, authenticated;
-grant select on public.resinate_staff to authenticated;
 drop policy if exists "see yourself" on public.resinate_staff;
-create policy "see yourself" on public.resinate_staff for select to authenticated
-  using (email = lower((select auth.jwt()) ->> 'email'));
+drop policy if exists "editors manage the team" on public.resinate_staff;
 
--- the signed-in person's role, or null when they aren't on the team
+-- every new account gets a profile; an email on resinate_staff starts as a maker
+create or replace function private.resinate_new_user() returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  insert into public.resinate_profiles (id, email, role)
+  values (new.id, lower(coalesce(new.email, '')),
+          case when exists (select 1 from public.resinate_staff s where s.email = lower(new.email)) then 'maker' else 'customer' end)
+  on conflict (id) do nothing;
+  return new;
+end $$;
+drop trigger if exists resinate_on_auth_user_created on auth.users;
+create trigger resinate_on_auth_user_created after insert on auth.users
+  for each row execute function private.resinate_new_user();
+
+create or replace function private.resinate_email_changed() returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  update public.resinate_profiles set email = lower(coalesce(new.email, '')) where id = new.id;
+  return new;
+end $$;
+drop trigger if exists resinate_on_auth_email_changed on auth.users;
+create trigger resinate_on_auth_email_changed after update of email on auth.users
+  for each row execute function private.resinate_email_changed();
+
+-- accounts made before this file ran get a profile too
+insert into public.resinate_profiles (id, email, role)
+select u.id, lower(coalesce(u.email, '')),
+       case when exists (select 1 from public.resinate_staff s where s.email = lower(u.email)) then 'maker' else 'customer' end
+from auth.users u
+on conflict (id) do nothing;
+update public.resinate_profiles p set role = 'maker'
+where p.role = 'customer' and exists (select 1 from public.resinate_staff s where s.email = p.email);
+
+-- the signed-in account's role: 'maker', 'customer', or null when signed out
 create or replace function private.resinate_role() returns text language sql stable security definer set search_path = '' as $$
-  select s.role from public.resinate_staff s where s.email = lower(auth.jwt() ->> 'email')
+  select p.role from public.resinate_profiles p where p.id = auth.uid()
 $$;
 create or replace function public.resinate_my_role() returns text language sql stable security definer set search_path = '' as $$
   select private.resinate_role()
@@ -35,11 +89,15 @@ $$;
 revoke all on function public.resinate_my_role() from public, anon;
 grant execute on function public.resinate_my_role() to authenticated;
 
--- editors add and remove team members from the dashboard
-grant insert, update, delete on public.resinate_staff to authenticated;
-drop policy if exists "editors manage the team" on public.resinate_staff;
-create policy "editors manage the team" on public.resinate_staff for all to authenticated
-  using ((select private.resinate_role()) = 'editor') with check ((select private.resinate_role()) = 'editor');
+-- delete your own account (orders you placed stay with the shop, unlinked from you).
+-- The page removes your profile photo through the Storage API first.
+create or replace function public.resinate_delete_me() returns void language plpgsql security definer set search_path = '' as $$
+begin
+  if auth.uid() is null then raise exception 'Sign in first' using errcode = '28000'; end if;
+  delete from auth.users where id = auth.uid();
+end $$;
+revoke all on function public.resinate_delete_me() from public, anon;
+grant execute on function public.resinate_delete_me() to authenticated;
 
 -- ── settings ─────────────────────────────────────────────────────
 create table if not exists public.resinate_settings (
@@ -54,10 +112,17 @@ grant insert, update, delete on public.resinate_settings to authenticated;
 drop policy if exists "anyone reads" on public.resinate_settings;
 create policy "anyone reads" on public.resinate_settings for select to anon, authenticated using (true);
 drop policy if exists "editors write" on public.resinate_settings;
-create policy "editors write" on public.resinate_settings for all to authenticated
-  using ((select private.resinate_role()) = 'editor') with check ((select private.resinate_role()) = 'editor');
+drop policy if exists "makers add" on public.resinate_settings;
+create policy "makers add" on public.resinate_settings for insert to authenticated
+  with check ((select private.resinate_role()) = 'maker');
+drop policy if exists "makers change" on public.resinate_settings;
+create policy "makers change" on public.resinate_settings for update to authenticated
+  using ((select private.resinate_role()) = 'maker') with check ((select private.resinate_role()) = 'maker');
+drop policy if exists "makers remove" on public.resinate_settings;
+create policy "makers remove" on public.resinate_settings for delete to authenticated
+  using ((select private.resinate_role()) = 'maker');
 
--- prices in cents: the defaults, overridden by whatever editors saved
+-- prices in cents: the defaults, overridden by whatever makers saved
 create or replace function private.resinate_prices() returns jsonb language sql stable security definer set search_path = '' as $$
   with s as (select coalesce((select data from public.resinate_settings where id = 'prices'), '{}'::jsonb) as d),
   def as (select '{"base":{"S":599,"M":999,"L":1399,"XL":1999},"print":{"S":199,"M":199,"L":299,"XL":299},
@@ -116,19 +181,31 @@ create table if not exists public.resinate_orders (
   low int not null default 0,
   high int not null default 0,
   needs_quote boolean not null default false,
-  price int check (price is null or price >= 0),         -- agreed total in cents; null until the team sets it
+  price int check (price is null or price >= 0),         -- agreed total in cents; null until a maker sets it
   payments jsonb not null default '[]'::jsonb check (jsonb_typeof(payments) = 'array'),  -- [{amount, method, at}]
   status text not null default 'New' check (status in ('New', 'Confirmed', 'Making', 'Ready', 'Collected', 'Cancelled')),
   source text not null default 'online' check (source in ('online', 'team')),
   created_by uuid default auth.uid()
 );
+alter table public.resinate_orders add column if not exists customer_id uuid references auth.users (id) on delete set null;
 create index if not exists resinate_orders_created on public.resinate_orders (created_at desc);
+create index if not exists resinate_orders_customer on public.resinate_orders (customer_id);
 alter table public.resinate_orders enable row level security;
 revoke all on public.resinate_orders from anon, authenticated;
 grant select, insert, update, delete on public.resinate_orders to authenticated;
 drop policy if exists "team only" on public.resinate_orders;
-create policy "team only" on public.resinate_orders for all to authenticated
-  using ((select private.resinate_role()) is not null) with check ((select private.resinate_role()) is not null);
+drop policy if exists "read orders" on public.resinate_orders;
+create policy "read orders" on public.resinate_orders for select to authenticated
+  using (customer_id = (select auth.uid()) or (select private.resinate_role()) = 'maker');
+drop policy if exists "makers add orders" on public.resinate_orders;
+create policy "makers add orders" on public.resinate_orders for insert to authenticated
+  with check ((select private.resinate_role()) = 'maker');
+drop policy if exists "makers change orders" on public.resinate_orders;
+create policy "makers change orders" on public.resinate_orders for update to authenticated
+  using ((select private.resinate_role()) = 'maker') with check ((select private.resinate_role()) = 'maker');
+drop policy if exists "makers remove orders" on public.resinate_orders;
+create policy "makers remove orders" on public.resinate_orders for delete to authenticated
+  using ((select private.resinate_role()) = 'maker');
 
 -- tidy a list of pieces down to the known fields, rejecting anything out of range
 create or replace function private.resinate_clean_items(p_items jsonb) returns jsonb
@@ -155,7 +232,8 @@ begin
   return res;
 end $$;
 
--- a customer's order: priced here, so the page can't set its own price, payments or status
+-- a customer's order: priced here, so the page can't set its own price, payments or status.
+-- A signed-in customer's order is linked to their account, so it shows on their profile.
 create or replace function public.resinate_place_order(p_name text, p_contact text, p_pickup text, p_notes text, p_items jsonb)
 returns table (ref text, price int, low int, high int, needs_quote boolean)
 language plpgsql volatile security definer set search_path = '' as $$
@@ -179,9 +257,10 @@ begin
     for i in 0..4 loop r := r || substr(a, 1 + get_byte(b, i) % length(a), 1); end loop;
     exit when not exists (select 1 from public.resinate_orders o where o.ref = r);
   end loop;
-  insert into public.resinate_orders (ref, name, contact, pickup, notes, items, low, high, needs_quote, price, source, created_by)
+  insert into public.resinate_orders (ref, name, contact, pickup, notes, items, low, high, needs_quote, price, source, created_by, customer_id)
   values (r, left(btrim(p_name), 120), left(btrim(p_contact), 200), left(coalesce(p_pickup, ''), 80), left(coalesce(p_notes, ''), 2000),
-          clean, q.low, q.high, not fixed, case when fixed then q.low end, 'online', auth.uid());
+          clean, q.low, q.high, not fixed, case when fixed then q.low end, 'online', auth.uid(),
+          case when private.resinate_role() = 'maker' then null else auth.uid() end);
   return query select r, case when fixed then q.low end, q.low, q.high, not fixed;
 end $$;
 revoke all on function public.resinate_place_order(text, text, text, text, jsonb) from public;
@@ -225,25 +304,42 @@ grant insert, delete on public.resinate_photos to authenticated;
 drop policy if exists "anyone reads" on public.resinate_photos;
 create policy "anyone reads" on public.resinate_photos for select to anon, authenticated using (true);
 drop policy if exists "editors add" on public.resinate_photos;
-create policy "editors add" on public.resinate_photos for insert to authenticated with check ((select private.resinate_role()) = 'editor');
+drop policy if exists "makers add" on public.resinate_photos;
+create policy "makers add" on public.resinate_photos for insert to authenticated with check ((select private.resinate_role()) = 'maker');
 drop policy if exists "editors remove" on public.resinate_photos;
-create policy "editors remove" on public.resinate_photos for delete to authenticated using ((select private.resinate_role()) = 'editor');
+drop policy if exists "makers remove" on public.resinate_photos;
+create policy "makers remove" on public.resinate_photos for delete to authenticated using ((select private.resinate_role()) = 'maker');
 
+-- the bucket is public, so anyone can view a photo by its link. Makers manage gallery files;
+-- everyone manages their own profile photo under avatars/<account id>/.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('resinate', 'resinate', true, 10485760, array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic'])
 on conflict (id) do update set public = true, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 drop policy if exists "resinate editors upload" on storage.objects;
-create policy "resinate editors upload" on storage.objects for insert to authenticated
-  with check (bucket_id = 'resinate' and (select private.resinate_role()) = 'editor');
 drop policy if exists "resinate editors read" on storage.objects;
-create policy "resinate editors read" on storage.objects for select to authenticated
-  using (bucket_id = 'resinate' and (select private.resinate_role()) = 'editor');   -- removing a file needs select too
 drop policy if exists "resinate editors delete" on storage.objects;
-create policy "resinate editors delete" on storage.objects for delete to authenticated
-  using (bucket_id = 'resinate' and (select private.resinate_role()) = 'editor');
+drop policy if exists "resinate add files" on storage.objects;
+create policy "resinate add files" on storage.objects for insert to authenticated
+  with check (bucket_id = 'resinate' and ((select private.resinate_role()) = 'maker'
+              or name like 'avatars/' || (select auth.uid())::text || '/%'));
+drop policy if exists "resinate read files" on storage.objects;
+create policy "resinate read files" on storage.objects for select to authenticated
+  using (bucket_id = 'resinate' and ((select private.resinate_role()) = 'maker'
+         or name like 'avatars/' || (select auth.uid())::text || '/%'));
+drop policy if exists "resinate replace files" on storage.objects;
+create policy "resinate replace files" on storage.objects for update to authenticated
+  using (bucket_id = 'resinate' and name like 'avatars/' || (select auth.uid())::text || '/%')
+  with check (bucket_id = 'resinate' and name like 'avatars/' || (select auth.uid())::text || '/%');
+drop policy if exists "resinate remove files" on storage.objects;
+create policy "resinate remove files" on storage.objects for delete to authenticated
+  using (bucket_id = 'resinate' and ((select private.resinate_role()) = 'maker'
+         or name like 'avatars/' || (select auth.uid())::text || '/%'));
 
--- ── first editor ─────────────────────────────────────────────────
--- Put your own sign-in email here, uncomment, and run it once. After that, add the rest of the team from the
--- dashboard's Team section (or in Table Editor → resinate_staff). The dashboard also shows this line with your
--- email filled in when you sign in before you're on the list.
--- insert into public.resinate_staff (email, role) values ('you@example.com', 'editor') on conflict (email) do update set role = excluded.role;
+-- ── roles: console only ──────────────────────────────────────────
+-- Everyone who signs up is a customer. To make someone a maker (they can open the dashboard, and change
+-- prices, payment details and photos), they sign up on the site first, then you run, here in the console:
+--   update public.resinate_profiles set role = 'maker' where email = 'their@email.com';
+-- To take it away:  update public.resinate_profiles set role = 'customer' where email = 'their@email.com';
+-- Or list an email before they sign up, and they start as a maker:
+--   insert into public.resinate_staff (email) values ('their@email.com') on conflict do nothing;
+-- See who's a maker:  select email, display_name, role from public.resinate_profiles order by role, email;

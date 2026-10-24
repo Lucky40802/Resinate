@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Resinate</title>
+<script>try{var t=localStorage.getItem("resinate-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <meta name="description" content="Resinate makes handmade epoxy and UV resin pieces, poured to order. Choose a size, add your own design, colours, sparkle or an LED light, and order online or at our market stall.">
 <meta property="og:title" content="Resinate">
 <meta property="og:description" content="Handmade resin pieces, poured to order. Build yours and order online.">
@@ -52,12 +53,54 @@ p{margin:0}
 a{color:var(--resin)}
 :focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:6px}
 
-body:not([data-view="dashboard"]) #dash{display:none}
+.page{display:none}
+body:not([data-view]) #shop,body[data-view="shop"] #shop,body[data-view="dashboard"] #dash,body[data-view="profile"] #pgProfile,body[data-view="settings"] #pgSettings,body[data-view="signin"] #pgSignin{display:block}
 .signin{max-width:440px;display:grid;gap:14px}
 .signin form{display:grid;gap:10px}
 .who{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
 .contact a{color:inherit}
-body[data-view="dashboard"] #shop{display:none}
+/* account */
+.acct{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:600;font-size:.92rem;padding:4px 12px 4px 4px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.acct.out{padding:6px 14px;background:var(--resin);color:var(--resin-ink);border-color:var(--resin)}
+.acct.out .avatar{display:none}
+.iconbtn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
+.iconbtn:hover{color:var(--ink)}
+.iconbtn svg{width:18px;height:18px}
+.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--resin),var(--amber));color:#fff;display:inline-grid;place-items:center;font-weight:700;font-size:.8rem;overflow:hidden;flex:none;background-size:cover;background-position:center}
+.avatar.big{width:96px;height:96px;font-size:2.2rem;box-shadow:0 0 0 4px var(--surface),0 0 0 5px var(--line)}
+.narrow{max-width:760px}
+.pagehead{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:28px}
+.pagehead .grow{flex:1 1 240px;min-width:0}
+.rolepill{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.rolepill.maker{background:color-mix(in srgb,var(--amber) 22%,transparent);color:var(--warn)}
+.prof{display:grid;grid-template-columns:.85fr 1.15fr;gap:24px;align-items:start}
+.photo{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.myorder{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:8px}
+.perks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px;padding:0;list-style:none}
+.perks li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:.92rem;color:var(--muted)}
+.perks b{display:block;color:var(--ink);font-size:1rem;margin-bottom:2px}
+.setgroup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:18px;overflow:hidden}
+.setgroup h3{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--resin);padding:14px 18px 6px}
+.setrow{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;border-top:1px solid var(--line)}
+.setgroup h3+.setrow{border-top:0}
+#stIn>.setrow:first-child{border-top:0}
+.setrow .txt{flex:1 1 260px;min-width:0}
+.setrow .txt b{display:block;font-weight:600}
+.setrow .txt span{color:var(--muted);font-size:.9rem}
+.segctl{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.segctl label{cursor:pointer}
+.segctl input{position:absolute;opacity:0;pointer-events:none}
+.segctl span{display:block;padding:7px 14px;font-size:.9rem}
+.segctl input:checked+span{background:var(--resin);color:var(--resin-ink)}
+.segctl input:focus-visible+span{outline:3px solid var(--amber);outline-offset:-3px}
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch i{position:absolute;inset:0;border-radius:999px;background:var(--line);cursor:pointer;transition:background .15s}
+.switch i::before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.switch input:checked+i{background:var(--resin)}
+.switch input:checked+i::before{transform:translateX(20px)}
+.switch input:focus-visible+i{outline:3px solid var(--amber);outline-offset:2px}
+@media (max-width:860px){.prof,.perks{grid-template-columns:1fr}}
 
 /* header */
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
@@ -306,10 +349,14 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       <a href="#track">Track order</a>
       <a href="#dashboard" class="team" id="dashLink" hidden>Dashboard</a>
     </nav>
+    <div class="row" style="gap:8px">
+      <a href="#settings" class="iconbtn" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
+      <a href="#signin" class="acct out" id="acctBtn"><span class="avatar" id="acctAvatar" aria-hidden="true"></span><span id="acctName">Sign in</span></a>
+    </div>
   </div>
 </header>
 
-<div id="shop">
+<div id="shop" class="page">
 <main id="top">
   <div class="wrap hero">
     <div>
@@ -565,12 +612,12 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
 </div>
 
 
-<main id="dash">
+<main id="dash" class="page">
   <section style="padding-top:40px">
     <div class="wrap">
       <div class="dhead">
         <div class="head" style="margin:0">
-          <p class="eyebrow">Team dashboard</p>
+          <p class="eyebrow">Maker dashboard</p>
           <h2>Orders &amp; payments</h2>
         </div>
         <div class="row">
@@ -579,19 +626,10 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           <a class="btn ghost" href="#top">View shop</a>
         </div>
       </div>
-      <div class="panel signin" id="signin" hidden>
-        <h3>Team sign-in</h3>
-        <p class="muted">Sign in with the email the Resinate team list has for you. We'll email you a sign-in link.</p>
-        <form id="siEmailForm" novalidate>
-          <div class="field"><label for="siEmail">Email</label><input type="text" id="siEmail" inputmode="email" autocomplete="email"></div>
-          <button class="btn" type="submit" id="siSend">Email me a code</button>
-        </form>
-        <form id="siCodeForm" novalidate hidden>
-          <p class="muted" style="font-size:.92rem">Open the link in the email on this device and you'll come straight back here, signed in. If the email has a code instead, type it below.</p>
-          <div class="field"><label for="siCode">Code from the email (if it has one)</label><input type="text" id="siCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></div>
-          <div class="row"><button class="btn" type="submit" id="siVerify">Sign in</button><button class="btn ghost" type="button" id="siBack">Use a different email</button></div>
-        </form>
-        <div id="siMsg" hidden></div>
+      <div class="panel" id="dashOut" hidden>
+        <h3>Sign in to open the dashboard</h3>
+        <p class="muted">The dashboard is for Resinate makers. Sign in with your account to continue.</p>
+        <div class="row"><a class="btn" href="#signin">Sign in</a></div>
       </div>
       <div class="panel setup" id="setupBox" hidden>
         <p class="eyebrow" style="color:var(--amber)">Connect the database</p>
@@ -605,11 +643,9 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
         <p class="muted" style="font-size:.88rem">Connected project: <span id="projRef"></span>. To use a different Supabase project, change <code>supabaseUrl</code> and <code>supabaseKey</code> in <code>resinate/config.js</code>.</p>
       </div>
       <div class="panel" id="notStaff" hidden>
-        <h3>You're not on the team list yet</h3>
-        <p class="muted">You're signed in as <b id="nsEmail"></b>, but that email isn't in <b>resinate_staff</b>. If someone else runs Resinate, ask an editor to add you from the dashboard's Team section.</p>
-        <p class="muted">Setting Resinate up yourself? Run this once in your project's <a id="sqlEditorLink2" href="https://supabase.com/dashboard" target="_blank" rel="noopener">SQL Editor</a> to make yourself the first editor, then reload:</p>
-        <div class="code" id="nsSql"></div>
-        <div class="row"><button class="btn small" type="button" data-copy="nsSql">Copy</button><button class="btn small ghost" type="button" id="signOut2">Sign out</button></div>
+        <h3>This dashboard is for makers</h3>
+        <p class="muted">You're signed in as <b id="nsEmail"></b> with a customer account. Maker access is given by the shop owner in the Supabase console, so it can't be requested here.</p>
+        <div class="row"><a class="btn" href="#profile">Go to your profile</a><a class="btn ghost" href="#top">Back to the shop</a></div>
       </div>
       <div class="empty" id="noCloud" hidden>The order system couldn't be reached, so the dashboard can't load. Check your connection and reload the page.</div>
       <div id="dashBody" hidden>
@@ -661,7 +697,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
 
         <div class="dsec" id="pricesSec" hidden>
           <div class="head" style="margin:0">
-            <p class="eyebrow">Editors only</p>
+            <p class="eyebrow">Makers</p>
             <h3>Prices</h3>
             <p class="lede">The shop and new orders use these straight away. Existing orders keep the price they were made at.</p>
           </div>
@@ -698,26 +734,9 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           </form>
         </div>
 
-        <div class="dsec" id="teamSec" hidden>
-          <div class="head" style="margin:0">
-            <p class="eyebrow">Editors only</p>
-            <h3>Team</h3>
-            <p class="lede">People who can open this dashboard. They sign in with the email listed here. Staff take orders and record payments; editors can also change prices, payment details, photos and this list.</p>
-          </div>
-          <div class="panel">
-            <div class="team" id="teamList"></div>
-            <form class="row" id="teamForm" novalidate>
-              <input type="text" id="tmEmail" inputmode="email" placeholder="teammate@example.com" aria-label="Teammate's email" style="flex:1 1 220px">
-              <select id="tmRole" aria-label="Role"><option value="staff">Staff</option><option value="editor">Editor</option></select>
-              <button class="btn small" type="submit">Add to team</button>
-            </form>
-            <div id="tmMsg" hidden></div>
-          </div>
-        </div>
-
         <div class="dsec" id="settingsSec" hidden>
           <div class="head" style="margin:0">
-            <p class="eyebrow">Editors only</p>
+            <p class="eyebrow">Makers</p>
             <h3>Payment details</h3>
             <p class="lede">Customers see these on the Order &amp; pay section and in the messages you copy. Leave a field blank to hide it.</p>
           </div>
@@ -747,11 +766,167 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   </section>
 </main>
 
+<main id="pgSignin" class="page">
+  <section style="padding-top:40px">
+    <div class="wrap narrow">
+      <div class="head">
+        <p class="eyebrow">Your account</p>
+        <h2>Sign in or create an account</h2>
+        <p class="lede">No password to remember. Enter your email and we'll send you a sign-in link. Your account is made the first time you use it.</p>
+      </div>
+      <div class="panel signin" id="signin">
+        <form id="siEmailForm" novalidate>
+          <div class="field"><label for="siEmail">Email</label><input type="text" id="siEmail" inputmode="email" autocomplete="email"></div>
+          <button class="btn" type="submit" id="siSend">Email me a sign-in link</button>
+        </form>
+        <form id="siCodeForm" novalidate hidden>
+          <p class="muted" style="font-size:.92rem">Open the link in the email on this device and you'll come straight back here, signed in. If the email has a code instead, type it below.</p>
+          <div class="field"><label for="siCode">Code from the email (if it has one)</label><input type="text" id="siCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></div>
+          <div class="row"><button class="btn" type="submit" id="siVerify">Sign in</button><button class="btn ghost" type="button" id="siBack">Use a different email</button></div>
+        </form>
+        <div id="siMsg" hidden></div>
+      </div>
+      <ul class="perks">
+        <li><b>All your orders</b>Every piece you order while signed in shows on your profile, with its progress.</li>
+        <li><b>Faster checkout</b>Your name and contact fill in for you when you order.</li>
+        <li><b>Your own photo</b>Add a profile picture and the name you'd like us to use.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<main id="pgProfile" class="page">
+  <section style="padding-top:40px">
+    <div class="wrap">
+      <div class="panel" id="pfOut" hidden>
+        <h3>Sign in to see your profile</h3>
+        <p class="muted">Your profile keeps your details and every order you've placed while signed in.</p>
+        <div class="row"><a class="btn" href="#signin">Sign in or create an account</a></div>
+      </div>
+      <div id="pfIn" hidden>
+        <div class="pagehead">
+          <span class="avatar big" id="pfAvatar" aria-hidden="true"></span>
+          <div class="grow">
+            <span class="rolepill" id="pfRole">Customer</span>
+            <h2 id="pfName" style="margin-top:6px">Your profile</h2>
+            <p class="muted" id="pfSince"></p>
+          </div>
+          <div class="row">
+            <a class="btn" href="#dashboard" id="pfDash" hidden>Open the dashboard</a>
+            <a class="btn ghost" href="#settings">Settings</a>
+          </div>
+        </div>
+        <div class="prof">
+          <form class="panel" id="pfForm" novalidate>
+            <h3 style="font-family:var(--body);font-size:1.05rem;font-weight:600">Your details</h3>
+            <div class="field"><span class="lbl">Profile photo</span>
+              <div class="photo">
+                <input type="file" id="pfPhoto" accept="image/*" aria-label="Choose a profile photo">
+                <button class="btn small ghost" type="button" id="pfPhotoRm" hidden>Remove photo</button>
+              </div>
+              <span class="hint">Cropped to a square on your device before it's uploaded.</span>
+            </div>
+            <div class="field"><label for="pfDisplay">Name</label><input type="text" id="pfDisplay" maxlength="80" autocomplete="name"></div>
+            <div class="field"><label for="pfContact">Phone, email or Instagram for orders</label><input type="text" id="pfContact" maxlength="200"><span class="hint">Used to fill in your orders and to match them when you track one.</span></div>
+            <div class="field"><label for="pfEmail">Sign-in email</label><input type="text" id="pfEmail" readonly></div>
+            <div id="pfMsg" hidden></div>
+            <div class="row"><button class="btn" type="submit" id="pfSave">Save details</button></div>
+          </form>
+          <div style="display:grid;gap:12px;min-width:0">
+            <div class="row" style="justify-content:space-between"><h3>Your orders</h3><a class="btn small" href="#build">New order</a></div>
+            <div class="orders" id="pfOrders"><div class="empty">Loading your orders…</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<main id="pgSettings" class="page">
+  <section style="padding-top:40px">
+    <div class="wrap narrow">
+      <div class="head">
+        <p class="eyebrow">Settings</p>
+        <h2>Settings</h2>
+        <p class="lede">Appearance and ordering settings are saved on this device. Account settings follow you everywhere you sign in.</p>
+      </div>
+
+      <div class="setgroup">
+        <h3>Appearance</h3>
+        <div class="setrow">
+          <div class="txt"><b>Theme</b><span>Match your device, or always use light or dark.</span></div>
+          <div class="segctl" role="radiogroup" aria-label="Theme">
+            <label><input type="radio" name="theme" value="system" id="thSystem"><span>System</span></label>
+            <label><input type="radio" name="theme" value="light" id="thLight"><span>Light</span></label>
+            <label><input type="radio" name="theme" value="dark" id="thDark"><span>Dark</span></label>
+          </div>
+        </div>
+        <div class="setrow">
+          <div class="txt"><b>Still pour</b><span>Stop the moving resin on the home page.</span></div>
+          <label class="switch"><input type="checkbox" id="stCalm" aria-label="Still pour"><i></i></label>
+        </div>
+      </div>
+
+      <div class="setgroup">
+        <h3>Ordering</h3>
+        <div class="setrow">
+          <div class="txt"><b>Fill in my details</b><span>Use the name and contact from your profile when you order.</span></div>
+          <label class="switch"><input type="checkbox" id="stPrefill" aria-label="Fill in my details"><i></i></label>
+        </div>
+        <div class="setrow">
+          <div class="txt"><b>Remember orders on this device</b><span>Keep quick links to orders you place here under Track order, even when you're signed out.</span></div>
+          <label class="switch"><input type="checkbox" id="stRemember" aria-label="Remember orders on this device"><i></i></label>
+        </div>
+        <div class="setrow">
+          <div class="txt"><b>Clear this device</b><span>Empties your cart and forgets the orders remembered here. Orders on your account aren't affected.</span></div>
+          <button class="btn small ghost" type="button" id="stClear">Clear</button>
+        </div>
+      </div>
+
+      <div class="setgroup">
+        <h3>Account</h3>
+        <div id="stOut" class="setrow">
+          <div class="txt"><b>You're not signed in</b><span>Sign in to keep your orders, details and photo in one place.</span></div>
+          <a class="btn small" href="#signin">Sign in</a>
+        </div>
+        <div id="stIn" hidden>
+          <div class="setrow">
+            <div class="txt"><b id="stEmail"></b><span id="stRoleTxt"></span></div>
+            <a class="btn small ghost" href="#profile">Edit profile</a>
+          </div>
+          <div class="setrow">
+            <div class="txt"><b>Sign out</b><span>Sign out on this device, or on every device where you're signed in.</span></div>
+            <div class="row"><button class="btn small ghost" type="button" id="stSignOut">Sign out</button><button class="btn small ghost" type="button" id="stSignOutAll">Sign out everywhere</button></div>
+          </div>
+          <div class="setrow">
+            <div class="txt"><b>Delete account</b><span>Removes your account, details and photo for good. Orders you placed stay with the shop so they can still be made and collected.</span></div>
+            <button class="btn small ghost" type="button" id="stDelAsk">Delete account</button>
+          </div>
+          <div class="setrow" id="stDelBox" hidden>
+            <div class="txt"><b>Type DELETE to confirm</b><span>This can't be undone.</span></div>
+            <div class="row"><input type="text" id="stDelWord" aria-label="Type DELETE to confirm" style="width:140px"><button class="btn small danger" type="button" id="stDelGo">Delete forever</button><button class="btn small ghost" type="button" id="stDelNo">Keep my account</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setgroup" id="stMaker" hidden>
+        <h3>Maker</h3>
+        <div class="setrow">
+          <div class="txt"><b>Dashboard</b><span>Orders, payments, prices, payment details and gallery photos.</span></div>
+          <a class="btn small" href="#dashboard">Open the dashboard</a>
+        </div>
+      </div>
+
+      <p class="muted" style="font-size:.88rem">Maker access is given by the shop owner in the Supabase console. Questions about an order? Use <a href="#track">Track order</a> or get in touch.</p>
+    </div>
+  </section>
+</main>
+
 <footer>
   <div class="wrap row" style="justify-content:space-between">
     <span>Resinate · handmade resin pieces</span>
     <span class="contact" id="contactLine" hidden></span>
-    <span>Custom work is quoted before we start. <a href="#dashboard">Team sign-in</a></span>
+    <span>Custom work is quoted before we start. <a href="#profile">Your account</a> · <a href="#settings">Settings</a></span>
   </div>
 </footer>
 <div class="toast" id="toast" hidden role="status"></div>
@@ -1056,7 +1231,8 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       }
       return sb.from("resinate_orders").update(patch).eq("ref", row.ref).then(function(u){ return {row:row, patched:!u.error && !!patch.payments}; });
     }).then(function(r){
-      if(!canSave) rememberOrder(r.row.ref, contact);
+      if(!canSave && pref("remember", true)) rememberOrder(r.row.ref, contact);
+      if(!canSave && session) loadMyOrders();
       showPayNow(r.row.ref, name, r.row.price, r.patched ? paidMethod : "");
       cart = []; saveDraft(); renderCart(); $("added").hidden = true;
       $("poName").value=""; $("poContact").value=""; $("poNotes").value=""; $("poPaid").value="";
@@ -1102,6 +1278,10 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       .then(function(){ $("trBtn").disabled = false; });
   }
   function renderTrack(o){
+    $("trResult").hidden = false;
+    $("trResult").innerHTML = trackHtml(o, "tr");
+  }
+  function trackHtml(o, prefix){
     var idx = TRACK_STEPS.indexOf(o.status);
     var steps = o.status==="Cancelled" ? '<span class="now">Cancelled</span>' : TRACK_STEPS.map(function(st,i){ return '<span class="'+(i<idx?"done":i===idx?"now":"")+'">'+st+'</span>'; }).join("");
     var pieces = (o.items||[]).map(function(it){ return "<li>"+((it.qty||1)>1?esc(it.qty)+" × ":"")+esc(itemSpec(it))+"</li>"; }).join("");
@@ -1109,36 +1289,40 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     var money_ = o.price==null
       ? '<p>We\'re confirming the price'+(o.low?' (estimate '+esc((o.needs_quote?"from ":"")+range(o.low,o.high))+')':'')+'. We\'ll be in touch before you pay.</p>'
       : '<div class="kv" style="grid-template-columns:auto 1fr"><span class="muted">Total</span><b class="num">'+money(o.price)+'</b><span class="muted">Paid</span><b class="num">'+money(o.paid||0)+'</b>'+(owed>0?'<span class="muted">Left to pay</span><b class="num">'+money(owed)+'</b>':'')+'</div>'+
-        (owed>0 && hasPay() && o.status!=="Cancelled" ? kvHtml(payRows(o.ref),"tr")+'<p class="muted">Use the reference in the payment description. Payments can take a day to show here.</p>' : '')+
+        (owed>0 && hasPay() && o.status!=="Cancelled" ? kvHtml(payRows(o.ref),prefix+o.ref.replace(/\W/g,""))+'<p class="muted">Use the reference in the payment description. Payments can take a day to show here.</p>' : '')+
         (owed===0 ? '<p><span class="pill ok">Paid in full</span></p>' : '');
-    $("trResult").hidden = false;
-    $("trResult").innerHTML = '<span class="eyebrow">Order '+esc(o.ref)+' · placed '+esc(new Date(o.created_at).toLocaleDateString(undefined,{day:"numeric",month:"short"}))+'</span>'+
+    return '<span class="eyebrow">Order '+esc(o.ref)+' · placed '+esc(new Date(o.created_at).toLocaleDateString(undefined,{day:"numeric",month:"short"}))+'</span>'+
       '<div class="track">'+steps+'</div><p>'+esc(TRACK_TEXT[o.status]||"")+'</p><ul style="margin:0;padding-left:1.1em">'+pieces+'</ul>'+money_;
   }
   $("trackForm").addEventListener("submit", function(e){ e.preventDefault(); checkOrder(); });
   renderRecent();
 
-  // ---- back from an emailed sign-in link: show the dashboard and tidy the address ----
+  // ---- back from an emailed sign-in link: show the profile and tidy the address ----
   (function(){
     var q = new URLSearchParams(location.search);
     if(q.has("code") || q.has("error_description")){
       if(q.has("error_description")) setTimeout(function(){ toast("Sign-in link didn't work: "+q.get("error_description")); }, 300);
-      setTimeout(function(){ history.replaceState(null, "", location.pathname+"#dashboard"); applyView(); }, 1500);
-      if(location.hash!=="#dashboard") location.hash = "dashboard";
+      setTimeout(function(){ history.replaceState(null, "", location.pathname+"#profile"); applyView(); }, 1500);
+      if(location.hash!=="#profile") location.hash = "profile";
     }
   })();
 
   // ---- views ----
+  var PAGES = {"#dashboard":"dashboard", "#profile":"profile", "#settings":"settings", "#signin":"signin"};
   function applyView(){
-    var dash = location.hash==="#dashboard";
-    document.body.setAttribute("data-view", dash?"dashboard":"shop");
-    $("dashLink").setAttribute("aria-current", dash?"page":"false");
-    if(dash){ scrollTo(0,0); if(canSave) loadOrders(); }
+    var view = PAGES[location.hash] || "shop";
+    if(view==="signin" && session) { location.replace("#profile"); return; }
+    document.body.setAttribute("data-view", view);
+    $("dashLink").setAttribute("aria-current", view==="dashboard"?"page":"false");
+    if(view!=="shop") scrollTo(0,0);
+    if(view==="dashboard" && canSave) loadOrders();
+    if(view==="profile" && session) loadMyOrders();
+    if(view==="signin") setTimeout(function(){ if(!$("siEmailForm").hidden) $("siEmail").focus(); }, 30);
   }
   addEventListener("hashchange", function(){
-    var wasDash = document.body.getAttribute("data-view")==="dashboard";
+    var was = document.body.getAttribute("data-view");
     applyView();
-    if(wasDash && location.hash!=="#dashboard"){ var t=document.querySelector(location.hash||"#top"); if(t) t.scrollIntoView(); }
+    if(was!=="shop" && !PAGES[location.hash]){ var t=document.querySelector(location.hash||"#top"); if(t) t.scrollIntoView(); }
   });
 
   function applyAccess(){
@@ -1148,19 +1332,16 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     document.querySelectorAll(".team-opt").forEach(function(el){ el.hidden = !canSave; el.disabled = !canSave; });
     if(!canSave && $("poPickup").selectedOptions[0] && $("poPickup").selectedOptions[0].disabled) $("poPickup").selectedIndex = 0;
     var signedIn = !!session;
-    $("signin").hidden = signedIn || !sb;
+    var em = signedIn ? (session.user && session.user.email || "").toLowerCase() : "";
+    $("dashOut").hidden = signedIn || !sb;
     $("noCloud").hidden = !!sb;
     $("notStaff").hidden = !(signedIn && !canSave && dbState!=="missing");
     $("setupBox").hidden = dbState!=="missing";
-    if(signedIn){
-      var em = (session.user && session.user.email || "").toLowerCase();
-      $("nsEmail").textContent = em;
-      $("nsSql").textContent = "insert into public.resinate_staff (email, role) values ('"+em.replace(/'/g,"''")+"', 'editor')\n  on conflict (email) do update set role = excluded.role;";
-    }
-    $("teamSec").hidden = !canEdit;
+    $("nsEmail").textContent = em;
     $("dashBody").hidden = !canSave;
     $("whoBox").hidden = !signedIn;
-    $("whoami").textContent = signedIn ? (session.user && session.user.email || "") + (role ? " · "+role : "") : "";
+    $("whoami").textContent = signedIn ? em + (role ? " · "+role : "") : "";
+    renderAccount();
     $("settingsSec").hidden = !canEdit;
     $("pricesSec").hidden = !canEdit;
     $("upForm").hidden = !canEdit;
@@ -1179,7 +1360,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       siEmail = em; $("siEmailForm").hidden = true; $("siCodeForm").hidden = false;
       showMsg("siMsg","ok","We emailed a sign-in link to "+em+". It can take a minute; check your spam folder too.");
       setTimeout(function(){ $("siCode").focus(); }, 30);
-    }).catch(function(err){ showMsg("siMsg","err","Couldn't send the code ("+errText(err)+")."); })
+    }).catch(function(err){ showMsg("siMsg","err","Couldn't send the sign-in email ("+errText(err)+")."); })
       .then(function(){ $("siSend").disabled = false; });
   });
   $("siCodeForm").addEventListener("submit", function(e){
@@ -1196,7 +1377,6 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   $("siBack").addEventListener("click", function(){ $("siCodeForm").hidden = true; $("siEmailForm").hidden = false; $("siMsg").hidden = true; });
   function signOut(){ if(sb) sb.auth.signOut().then(function(){ toast("Signed out"); }); }
   $("signOut").addEventListener("click", signOut);
-  $("signOut2").addEventListener("click", signOut);
 
   function afterAuth(){
     var ask = session ? sb.rpc("resinate_my_role") : Promise.resolve({data:null});
@@ -1204,14 +1384,168 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       if(r && r.error && isMissing(r.error)) dbState = "missing";
       role = (r && !r.error) ? r.data : null;
     }, function(){ role = null; }).then(function(){
-      canSave = !!role; canEdit = role==="editor";
+      canSave = role==="maker"; canEdit = canSave;
       if(!canSave){ orders = []; }
       applyAccess(); fillSettings(); fillPrices();
+      loadProfile();
+      if(session){ $("siCodeForm").hidden = true; $("siEmailForm").hidden = false; $("siMsg").hidden = true; }
+      if(session && document.body.getAttribute("data-view")==="signin") location.replace("#profile");
       liveOrders(canSave);
       if(canSave) loadOrders();
-      if(canEdit) loadTeam();
     });
   }
+
+  var redrawHero = null;
+  // ---- device preferences (Settings) ----
+  function pref(k, dflt){ try{ var v = localStorage.getItem("resinate-pref-"+k); return v===null ? dflt : v==="1"; }catch(e){ return dflt; } }
+  function setPref(k, v){ try{ localStorage.setItem("resinate-pref-"+k, v?"1":"0"); }catch(e){} }
+  function currentTheme(){ try{ return localStorage.getItem("resinate-theme") || "system"; }catch(e){ return "system"; } }
+  function applyTheme(t){
+    if(t==="light"||t==="dark") document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme");
+    try{ if(t==="system") localStorage.removeItem("resinate-theme"); else localStorage.setItem("resinate-theme", t); }catch(e){}
+    if(typeof redrawHero==="function") redrawHero();
+  }
+  $("th"+{system:"System",light:"Light",dark:"Dark"}[currentTheme()]).checked = true;
+  document.querySelectorAll('input[name="theme"]').forEach(function(r){ r.addEventListener("change", function(){ applyTheme(this.value); toast("Theme: "+this.value); }); });
+  $("stCalm").checked = pref("calm", false);
+  $("stCalm").addEventListener("change", function(){ setPref("calm", this.checked); if(typeof redrawHero==="function") redrawHero(); });
+  $("stPrefill").checked = pref("prefill", true);
+  $("stPrefill").addEventListener("change", function(){ setPref("prefill", this.checked); prefillCheckout(); });
+  $("stRemember").checked = pref("remember", true);
+  $("stRemember").addEventListener("change", function(){ setPref("remember", this.checked); });
+  $("stClear").addEventListener("click", function(){
+    try{ localStorage.removeItem("resinate-draft"); localStorage.removeItem("resinate-mine"); }catch(e){}
+    cart = []; renderCart(); renderRecent(); $("added").hidden = true;
+    toast("This device is cleared");
+  });
+
+  // ---- your account ----
+  var profile = null;
+  function initialOf(){ var n = (profile && profile.display_name) || (session && session.user && session.user.email) || "?"; return n.trim().charAt(0).toUpperCase(); }
+  function avatarUrl(){
+    if(!sb || !profile || !profile.avatar_path) return "";
+    return sb.storage.from("resinate").getPublicUrl(profile.avatar_path).data.publicUrl + "?v=" + Date.parse(profile.updated_at||0);
+  }
+  function paintAvatar(el){
+    var url = avatarUrl();
+    el.style.backgroundImage = url ? 'url("'+url+'")' : "";
+    el.textContent = url ? "" : initialOf();
+  }
+  function renderAccount(){
+    var signedIn = !!session;
+    var btn = $("acctBtn");
+    btn.classList.toggle("out", !signedIn);
+    btn.href = signedIn ? "#profile" : "#signin";
+    $("acctName").textContent = signedIn ? ((profile && profile.display_name) || "Your account") : "Sign in";
+    if(signedIn) paintAvatar($("acctAvatar"));
+    // profile page
+    $("pfOut").hidden = signedIn; $("pfIn").hidden = !signedIn;
+    if(signedIn){
+      paintAvatar($("pfAvatar"));
+      $("pfName").textContent = (profile && profile.display_name) || "Your profile";
+      $("pfRole").textContent = role==="maker" ? "Maker" : "Customer";
+      $("pfRole").className = "rolepill"+(role==="maker"?" maker":"");
+      $("pfSince").textContent = profile && profile.created_at ? "Member since "+new Date(profile.created_at).toLocaleDateString(undefined,{month:"long",year:"numeric"}) : "";
+      $("pfDash").hidden = role!=="maker";
+      $("pfEmail").value = session.user && session.user.email || "";
+      $("pfPhotoRm").hidden = !(profile && profile.avatar_path);
+      if(profile && !$("pfForm").contains(document.activeElement)){ $("pfDisplay").value = profile.display_name||""; $("pfContact").value = profile.contact||""; }
+    }
+    // settings page
+    $("stOut").hidden = signedIn; $("stIn").hidden = !signedIn;
+    $("stMaker").hidden = role!=="maker";
+    if(signedIn){
+      $("stEmail").textContent = session.user && session.user.email || "";
+      $("stRoleTxt").textContent = role==="maker" ? "Maker account: you can open the dashboard." : "Customer account.";
+    }
+    prefillCheckout();
+  }
+  function prefillCheckout(){
+    if(!profile || canSave || !pref("prefill", true)) return;
+    if(!$("poName").value && profile.display_name) $("poName").value = profile.display_name;
+    if(!$("poContact").value && profile.contact) $("poContact").value = profile.contact;
+    if(!$("trContact").value && profile.contact) $("trContact").value = profile.contact;
+  }
+  function loadProfile(){
+    if(!sb || !session){ profile = null; renderAccount(); return; }
+    sb.from("resinate_profiles").select("*").eq("id", session.user.id).maybeSingle().then(function(r){
+      profile = (r && !r.error) ? r.data : null;
+      renderAccount();
+    });
+  }
+  $("pfForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var patch = {display_name:$("pfDisplay").value.trim().slice(0,80), contact:$("pfContact").value.trim().slice(0,200), updated_at:new Date().toISOString()};
+    $("pfSave").disabled = true;
+    sb.from("resinate_profiles").update(patch).eq("id", session.user.id).select().maybeSingle().then(function(r){
+      if(r.error) throw r.error;
+      profile = r.data || Object.assign({}, profile, patch); renderAccount();
+      showMsg("pfMsg","ok","Saved.");
+    }).catch(function(err){ showMsg("pfMsg","err","Didn't save ("+errText(err)+")."); })
+      .then(function(){ $("pfSave").disabled = false; });
+  });
+  // profile photo: cropped to a 256px square on the device, then uploaded over the old one
+  function squareJpeg(file){
+    return new Promise(function(resolve, reject){
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function(){
+        var side = Math.min(img.naturalWidth, img.naturalHeight), c = document.createElement("canvas");
+        c.width = c.height = 256;
+        c.getContext("2d").drawImage(img, (img.naturalWidth-side)/2, (img.naturalHeight-side)/2, side, side, 0, 0, 256, 256);
+        URL.revokeObjectURL(url);
+        c.toBlob(function(b){ b ? resolve(b) : reject(new Error("Couldn't read that image")); }, "image/jpeg", 0.88);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("That file isn't an image this browser can open")); };
+      img.src = url;
+    });
+  }
+  $("pfPhoto").addEventListener("change", function(){
+    var f = this.files[0]; if(!f) return;
+    var path = "avatars/"+session.user.id+"/avatar.jpg";
+    showMsg("pfMsg","ok","Uploading your photo…");
+    squareJpeg(f).then(function(blob){
+      return sb.storage.from("resinate").upload(path, blob, {contentType:"image/jpeg", upsert:true});
+    }).then(function(r){
+      if(r.error) throw r.error;
+      return sb.from("resinate_profiles").update({avatar_path:path, updated_at:new Date().toISOString()}).eq("id", session.user.id).select().maybeSingle();
+    }).then(function(r){
+      if(r.error) throw r.error;
+      profile = r.data; renderAccount(); showMsg("pfMsg","ok","Photo updated."); $("pfPhoto").value = "";
+    }).catch(function(err){ showMsg("pfMsg","err","Photo didn't upload ("+errText(err)+")."); });
+  });
+  $("pfPhotoRm").addEventListener("click", function(){
+    if(!profile || !profile.avatar_path) return;
+    var path = profile.avatar_path;
+    sb.storage.from("resinate").remove([path]).then(function(){
+      return sb.from("resinate_profiles").update({avatar_path:null, updated_at:new Date().toISOString()}).eq("id", session.user.id).select().maybeSingle();
+    }).then(function(r){ if(r.error) throw r.error; profile = r.data; renderAccount(); toast("Photo removed"); })
+      .catch(function(err){ toast("Couldn't remove it ("+errText(err)+")."); });
+  });
+  // your orders
+  function loadMyOrders(){
+    if(!sb || !session) return;
+    sb.from("resinate_orders").select("ref,created_at,status,items,price,low,high,needs_quote,payments").eq("customer_id", session.user.id).order("created_at",{ascending:false}).then(function(r){
+      if(r.error){ $("pfOrders").innerHTML = '<div class="empty">Your orders couldn\'t load ('+esc(errText(r.error))+').</div>'; return; }
+      if(!r.data.length){ $("pfOrders").innerHTML = '<div class="empty">No orders yet. Orders you place while signed in show up here with their progress.</div>'; return; }
+      $("pfOrders").innerHTML = r.data.map(function(o){ o.paid = paidOf(o); return '<div class="myorder">'+trackHtml(o, "my")+'</div>'; }).join("");
+    });
+  }
+  // settings: account actions
+  $("stSignOut").addEventListener("click", signOut);
+  $("stSignOutAll").addEventListener("click", function(){ sb.auth.signOut({scope:"global"}).then(function(){ toast("Signed out on every device"); }); });
+  $("stDelAsk").addEventListener("click", function(){ $("stDelBox").hidden = false; $("stDelWord").focus(); });
+  $("stDelNo").addEventListener("click", function(){ $("stDelBox").hidden = true; $("stDelWord").value = ""; });
+  $("stDelGo").addEventListener("click", function(){
+    if($("stDelWord").value.trim().toUpperCase()!=="DELETE"){ toast("Type DELETE in the box to confirm."); return; }
+    var btn = this; btn.disabled = true;
+    var rm = (profile && profile.avatar_path) ? sb.storage.from("resinate").remove([profile.avatar_path]) : Promise.resolve();
+    rm.then(function(){ return sb.rpc("resinate_delete_me"); }).then(function(r){
+      if(r && r.error) throw r.error;
+      return sb.auth.signOut({scope:"local"});
+    }).then(function(){ $("stDelBox").hidden = true; $("stDelWord").value = ""; toast("Your account is deleted"); location.hash = "top"; })
+      .catch(function(err){ toast("Couldn't delete the account ("+errText(err)+")."); })
+      .then(function(){ btn.disabled = false; });
+  });
 
   // ---- connection state ----
   var dbState = "unknown"; // "ok" once the Resinate tables answer, "missing" when the project has no Resinate tables
@@ -1224,7 +1558,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     var ref = m ? m[1] : "";
     $("projRef").textContent = ref || (CFG.supabaseUrl || "none set");
     var link = ref ? "https://supabase.com/dashboard/project/"+ref+"/sql/new" : "https://supabase.com/dashboard";
-    $("sqlEditorLink").href = link; $("sqlEditorLink2").href = link;
+    $("sqlEditorLink").href = link;
   })();
   var setupSql = null;
   $("copySetupSql").addEventListener("click", function(){
@@ -1246,15 +1580,13 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     }).subscribe();
   }
 
-  // ---- getting started checklist (editors) ----
-  var team = [];
+  // ---- getting started checklist (makers) ----
   function renderStart(){
     if(!canEdit){ $("startBox").hidden = true; return; }
     var hidden = false; try{ hidden = localStorage.getItem("resinate-start-hidden")==="1"; }catch(e){}
     var items = [
-      [true, "Database connected and you're an editor"],
+      [true, "Database connected and you're a maker"],
       [hasPay(), "Add your PayID or bank details under Payment details, so customers can pay"],
-      [team.length>1, "Add your teammates in the Team section"],
       [photos.length>0, "Upload a photo of a finished piece for the Our work gallery"],
       [contactLinks().length>0, "Put your Instagram, email or phone in resinate/config.js so customers can reach you"]
     ];
@@ -1264,49 +1596,6 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   }
   $("startHide").addEventListener("click", function(){ try{ localStorage.setItem("resinate-start-hidden","1"); }catch(e){} $("startBox").hidden = true; });
 
-  // ---- team (editors) ----
-  function loadTeam(){
-    sb.from("resinate_staff").select("email,role,added_at").order("added_at").then(function(r){
-      if(r.error) return;
-      team = r.data; renderTeam(); renderStart();
-    });
-  }
-  var confirmMem = null;
-  function renderTeam(){
-    var me = (session && session.user && session.user.email || "").toLowerCase();
-    $("teamList").innerHTML = team.map(function(m){
-      var mine = m.email===me;
-      return '<div class="mem"><b>'+esc(m.email)+(mine?' <span class="muted">(you)</span>':'')+'</b>'+
-        '<select data-role="'+esc(m.email)+'" aria-label="Role for '+esc(m.email)+'"'+(mine?' disabled':'')+'><option value="staff"'+(m.role==="staff"?" selected":"")+'>Staff</option><option value="editor"'+(m.role==="editor"?" selected":"")+'>Editor</option></select>'+
-        (mine ? '' : confirmMem===m.email
-          ? '<button class="btn small danger" type="button" data-rmmem="'+esc(m.email)+'">Remove</button><button class="btn small ghost" type="button" data-keepmem="1">Keep</button>'
-          : '<button class="btn small ghost" type="button" data-askmem="'+esc(m.email)+'">Remove</button>')+'</div>';
-    }).join("");
-  }
-  $("teamList").addEventListener("change", function(e){
-    var em = e.target.getAttribute("data-role"); if(!em) return;
-    sb.from("resinate_staff").update({role:e.target.value}).eq("email", em).then(function(r){ if(r.error) throw r.error; toast(em+" is now "+e.target.value); loadTeam(); })
-      .catch(function(err){ toast("Role didn't change ("+errText(err)+")."); loadTeam(); });
-  });
-  $("teamList").addEventListener("click", function(e){
-    var b = e.target.closest("button"); if(!b) return; var em;
-    if((em=b.getAttribute("data-askmem"))){ confirmMem = em; renderTeam(); }
-    else if(b.getAttribute("data-keepmem")){ confirmMem = null; renderTeam(); }
-    else if((em=b.getAttribute("data-rmmem"))){
-      confirmMem = null;
-      sb.from("resinate_staff").delete().eq("email", em).then(function(r){ if(r.error) throw r.error; toast(em+" removed from the team"); loadTeam(); })
-        .catch(function(err){ toast("Couldn't remove them ("+errText(err)+")."); });
-    }
-  });
-  $("teamForm").addEventListener("submit", function(e){
-    e.preventDefault();
-    var em = $("tmEmail").value.trim().toLowerCase();
-    if(!/^\S+@\S+\.\S+$/.test(em)){ showMsg("tmMsg","err","Enter their email address, like sam@example.com."); return; }
-    sb.from("resinate_staff").upsert({email:em, role:$("tmRole").value}).then(function(r){
-      if(r.error) throw r.error;
-      showMsg("tmMsg","ok",em+" can now sign in at this page's Team sign-in with that email."); $("tmEmail").value=""; loadTeam();
-    }).catch(function(err){ showMsg("tmMsg","err","Couldn't add them ("+errText(err)+")."); });
-  });
 
   // ---- dashboard data ----
   var orders = [];
@@ -1717,11 +2006,13 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     ctx.strokeStyle = mix(ink, "#ffffff", 0.7); ctx.globalAlpha = .5; ctx.lineWidth = Math.max(1.5,w/160);
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
   }
-  function loop(t){ if(document.body.getAttribute("data-view")!=="dashboard" && !document.hidden) draw(t); requestAnimationFrame(loop); }
-  size(); addEventListener("resize", function(){ size(); if(reduce) draw(0); });
-  addEventListener("hashchange", function(){ setTimeout(function(){ size(); if(reduce) draw(0); }, 0); });
-  if(reduce) draw(0); else requestAnimationFrame(loop);
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){ if(reduce) draw(0); });
+  function still(){ return reduce || pref("calm", false); }
+  function loop(t){ if(!still() && document.body.getAttribute("data-view")==="shop" && !document.hidden) draw(t); requestAnimationFrame(loop); }
+  redrawHero = function(){ setTimeout(function(){ size(); draw(still() ? 0 : performance.now()); }, 0); };
+  size(); addEventListener("resize", redrawHero);
+  addEventListener("hashchange", redrawHero);
+  draw(0); requestAnimationFrame(loop);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redrawHero);
 })();
 </script>
 </body>
