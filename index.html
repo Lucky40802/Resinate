@@ -1297,14 +1297,29 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   $("trackForm").addEventListener("submit", function(e){ e.preventDefault(); checkOrder(); });
   renderRecent();
 
-  // ---- back from an emailed sign-in link: show the profile and tidy the address ----
+  // ---- back from an emailed sign-in link: finish signing in, or say why it didn't work ----
   (function(){
-    var q = new URLSearchParams(location.search);
-    if(q.has("code") || q.has("error_description")){
-      if(q.has("error_description")) setTimeout(function(){ toast("Sign-in link didn't work: "+q.get("error_description")); }, 300);
-      setTimeout(function(){ history.replaceState(null, "", location.pathname+"#profile"); applyView(); }, 1500);
-      if(location.hash!=="#profile") location.hash = "profile";
+    var q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.slice(1));
+    var errDesc = q.get("error_description") || h.get("error_description");
+    var errCode = q.get("error_code") || h.get("error_code") || "";
+    if(!q.has("code") && !errDesc) return;
+    var hadVerifier = false; try{ for(var i=0;i<localStorage.length;i++) if(/^resinate-auth.*code-verifier$/.test(localStorage.key(i))) hadVerifier = true; }catch(e){}
+    function tidy(hash){ setTimeout(function(){ history.replaceState(null, "", location.pathname+hash); applyView(); }, 0); }
+    function failed(text){ tidy("#signin"); setTimeout(function(){ showMsg("siMsg","err",text); }, 0); }
+    if(errDesc){
+      failed(/expired|invalid|not found/i.test(errCode+" "+errDesc)
+        ? "That sign-in link has already been used or has expired. Each link works once: send yourself a new one below."
+        : "That sign-in link didn't work ("+errDesc.replace(/\+/g," ")+"). Send yourself a new one below.");
+      return;
     }
+    if(!sb){ failed("Sign-in isn't available right now. Please try again later."); return; }
+    sb.auth.initialize().then(function(r){ return r && r.error ? r : sb.auth.getSession(); }).then(function(r){
+      if(r && r.data && r.data.session){ tidy("#profile"); return; }
+      var msg = r && r.error ? (r.error.message||"") : "";
+      failed(/verifier/i.test(msg) || (!msg && !hadVerifier)
+        ? "Open the sign-in link in the same browser you asked for it in (emails often open in a different app). Or send a new link and type the code from the email here."
+        : "That sign-in link didn't work"+(msg?" ("+msg+")":"")+". It may have been used already: send yourself a new one below.");
+    }).catch(function(err){ failed("That sign-in link didn't work ("+errText(err)+"). Send yourself a new one below."); });
   })();
 
   // ---- views ----
