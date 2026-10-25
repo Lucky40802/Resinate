@@ -215,16 +215,24 @@ begin
   if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) not between 1 and 20 then
     raise exception 'An order needs between 1 and 20 lines' using errcode = '22023';
   end if;
+  -- palette: the colour names picked in the builder (up to 6); the dye charge counts at least that many colours
   select jsonb_agg(jsonb_build_object(
       'size', e ->> 'size',
       'qty', coalesce((e ->> 'qty')::int, 1),
       'print', coalesce((e ->> 'print')::boolean, false),
-      'colours', least(greatest(coalesce((e ->> 'colours')::int, 1), 1), 6),
+      'colours', least(greatest(coalesce((e ->> 'colours')::int, 1), jsonb_array_length(pal.p), 1), 6),
+      'palette', pal.p,
       'sparkle', coalesce((e ->> 'sparkle')::boolean, false),
       'led', coalesce((e ->> 'led')::boolean, false) and (e ->> 'size') in ('L', 'XL'),
       'custom', coalesce((e ->> 'custom')::boolean, false),
       'customNote', left(coalesce(e ->> 'customNote', ''), 300)))
-    into res from jsonb_array_elements(p_items) e;
+    into res
+    from jsonb_array_elements(p_items) e
+    cross join lateral (
+      select coalesce(jsonb_agg(left(c.v, 24) order by c.n), '[]'::jsonb) as p
+      from jsonb_array_elements_text(case when jsonb_typeof(e -> 'palette') = 'array' then e -> 'palette' else '[]'::jsonb end)
+           with ordinality as c(v, n)
+      where c.n <= 6 and length(trim(c.v)) > 0) pal;
   if exists (select 1 from jsonb_array_elements(res) e
              where (e ->> 'size') not in ('S', 'M', 'L', 'XL') or (e ->> 'qty')::int not between 1 and 20) then
     raise exception 'Each line needs a size (S, M, L or XL) and a quantity from 1 to 20' using errcode = '22023';

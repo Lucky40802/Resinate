@@ -3,7 +3,7 @@
 The website for **Resinate**, a small handmade resin studio: epoxy and UV resin pieces, poured to order. Published with GitHub Pages at **https://lucky40802.github.io/Resinate/**.
 
 ## What's on the site
-- **Shop:** what Resinate is and how a piece is made, the four sizes (Small, Medium, Large, XL), add-on prices by size, a builder that prices a piece as you go, and an order form that holds several pieces.
+- **Shop:** what Resinate is and how a piece is made, the four sizes (Small, Medium, Large, XL), add-on prices by size, a builder that prices a piece as you go (with a live preview and a colour picker, so makers see exactly which colours were chosen), and an order form that holds several pieces. On phones, a bar at the bottom keeps the order total and a checkout button in reach.
 - **Checkout:** customers place an order and get a reference (like `RSN-AB12C`), the amount to pay, and the PayID or bank details to pay with. Custom inclusions and XL sparkle get a confirmed price from the team first.
 - **Track order:** customers check an order with its reference and the phone, email or Instagram they ordered with.
 - **Our work:** a photo gallery the makers upload to.
