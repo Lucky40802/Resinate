@@ -39,6 +39,13 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
    (or set `role` in Table Editor → `resinate_profiles`). Use `'customer'` to take it away. To make someone a maker before they sign up, add their email to `resinate_staff`.
 5. **Payment details:** fill them in on the dashboard, so customers see where to pay.
 
+### Email notifications for new messages
+Each message sent from the site's "Message us" form is also emailed to resinatedesigns.bhhs@gmail.com. A trigger on `resinate_messages` calls the `notify-message` Edge Function (`supabase/functions/notify-message`), which sends through [Resend](https://resend.com). To switch it on:
+1. Make a free Resend account **using resinatedesigns.bhhs@gmail.com** (without your own domain, Resend only sends to the account's own address).
+2. In Resend, **API Keys → Create API key** (permission: Sending access) and copy it.
+3. In Supabase, **Edge Functions → Secrets → Add new secret**: name `RESEND_API_KEY`, value the key. Save.
+Replies to the email go straight to the customer when they left an email address.
+
 Supabase's built-in email sender only sends a few emails an hour. For a whole team, add your own sender under Authentication → SMTP Settings.
 
 ## How the data is protected

@@ -141,7 +141,7 @@ $$;
 -- the themed designs customers can pick (names and colours); makers change them on the dashboard
 create or replace function private.resinate_designs() returns jsonb language sql stable security definer set search_path = '' as $$
   select coalesce((select data -> 'list' from public.resinate_settings where id = 'designs' and jsonb_typeof(data -> 'list') = 'array'),
-    '[{"name": "Ocean wave", "palette": ["Ocean teal", "Sky blue", "Pearl white"]}, {"name": "Forest", "palette": ["Emerald", "Gold"]}, {"name": "Galaxy", "palette": ["Deep blue", "Purple", "Black"]}, {"name": "Sunset", "palette": ["Amber", "Rose pink", "Gold"]}, {"name": "Blossom", "palette": ["Rose pink", "Pearl white"]}, {"name": "Geode", "palette": ["Clear", "Purple", "Gold"]}]'::jsonb)
+    '[{"name": "Ocean wave", "palette": ["Ocean teal", "Sky blue"]}, {"name": "Forest", "palette": ["Emerald", "Gold"]}, {"name": "Galaxy", "palette": ["Deep blue", "Purple"]}, {"name": "Sunset", "palette": ["Amber", "Rose pink"]}, {"name": "Blossom", "palette": ["Rose pink", "Pearl white"]}, {"name": "Geode", "palette": ["Purple", "Gold"]}]'::jsonb)
 $$;
 create or replace function private.resinate_quote(p_items jsonb, out low int, out high int, out is_open boolean)
 language plpgsql stable security definer set search_path = '' as $$
@@ -231,14 +231,14 @@ begin
   if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) not between 1 and 20 then
     raise exception 'An order needs between 1 and 20 lines' using errcode = '22023';
   end if;
-  -- palette: the colour names picked in the builder (up to 6); the dye charge counts at least that many colours
+  -- palette: the colour names picked in the builder (up to 2); the dye charge counts at least that many colours
   -- theme: the name of one of our themed designs, or empty
   -- art / artText / artNote: a customer's own design (their uploaded picture's path, words, and a description)
   select jsonb_agg(jsonb_build_object(
       'size', e ->> 'size',
       'qty', coalesce((e ->> 'qty')::int, 1),
       'print', coalesce((e ->> 'print')::boolean, false),
-      'colours', least(greatest(coalesce((e ->> 'colours')::int, 1), jsonb_array_length(pal.p), 1), 6),
+      'colours', least(greatest(coalesce((e ->> 'colours')::int, 1), jsonb_array_length(pal.p), 1), 2),
       'palette', pal.p,
       'theme', left(coalesce(e ->> 'theme', ''), 30),
       'art', case when coalesce(e ->> 'art', '') ~ '^designs/[0-9a-f-]{36}/[A-Za-z0-9_.-]{1,80}$' then e ->> 'art' else '' end,
@@ -254,7 +254,7 @@ begin
       select coalesce(jsonb_agg(left(c.v, 24) order by c.n), '[]'::jsonb) as p
       from jsonb_array_elements_text(case when jsonb_typeof(e -> 'palette') = 'array' then e -> 'palette' else '[]'::jsonb end)
            with ordinality as c(v, n)
-      where c.n <= 6 and length(trim(c.v)) > 0) pal;
+      where c.n <= 2 and length(trim(c.v)) > 0) pal;
   if exists (select 1 from jsonb_array_elements(res) e
              where (e ->> 'size') not in ('S', 'M', 'L', 'XL') or (e ->> 'qty')::int not between 1 and 20) then
     raise exception 'Each line needs a size (S, M, L or XL) and a quantity from 1 to 20' using errcode = '22023';
@@ -364,6 +364,23 @@ begin
     alter publication supabase_realtime add table public.resinate_messages;
   end if;
 end $$;
+
+-- email the team about each new message: this trigger calls the notify-message Edge Function
+-- (supabase/functions/notify-message), which sends it through Resend once RESEND_API_KEY is set
+create extension if not exists pg_net;
+alter table public.resinate_messages add column if not exists notified_at timestamptz;
+create or replace function private.resinate_message_ping() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform net.http_post(url := 'https://sazvjlufjofbnrsmtlhp.supabase.co/functions/v1/notify-message',
+                        body := '{}'::jsonb, timeout_milliseconds := 5000);
+  return null;
+exception when others then
+  return null;  -- a failed email ping must never stop a message being saved
+end $$;
+drop trigger if exists resinate_message_ping on public.resinate_messages;
+create trigger resinate_message_ping after insert on public.resinate_messages
+  for each statement execute function private.resinate_message_ping();
 
 -- live updates: the dashboard hears new and changed orders (row-level security still decides who sees them)
 do $$

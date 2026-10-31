@@ -40,17 +40,18 @@
   }
 
   // ---- builder state (kept in this browser so a half-built order survives a reload) ----
+  var MAX_COLOURS = 2; // most colours in one piece (same limit in setup.sql)
   var COLOURS = [["Clear","#e8f2f1"],["Ocean teal","#0d8a8c"],["Deep blue","#24509e"],["Sky blue","#7cc3e6"],["Emerald","#2f9a5c"],["Purple","#7d4fb0"],
     ["Rose pink","#e48aa8"],["Red","#c0392b"],["Amber","#cf7a1c"],["Gold","#d9a63a"],["Pearl white","#f4f1ea"],["Black","#1d1d1f"]];
   function colourHex(name){ for(var i=0;i<COLOURS.length;i++) if(COLOURS[i][0]===name) return COLOURS[i][1]; return "#9cc"; }
   // themed designs: included in the base price. Makers change them on the dashboard (resinate_settings 'designs').
   var DEFAULT_DESIGNS = [
-    {name:"Ocean wave", blurb:"Layers of teal and blue breaking over white lacing, like a wave on the sand.", palette:["Ocean teal","Sky blue","Pearl white"]},
+    {name:"Ocean wave", blurb:"Teal and sky blue breaking like a wave on the sand.", palette:["Ocean teal","Sky blue"]},
     {name:"Forest", blurb:"Deep greens with a touch of gold, like light through the leaves.", palette:["Emerald","Gold"]},
-    {name:"Galaxy", blurb:"Night-sky blues and purples, best with sparkle for the stars.", palette:["Deep blue","Purple","Black"]},
-    {name:"Sunset", blurb:"Warm amber fading into rose and gold.", palette:["Amber","Rose pink","Gold"]},
+    {name:"Galaxy", blurb:"Night-sky blue and purple, best with sparkle for the stars.", palette:["Deep blue","Purple"]},
+    {name:"Sunset", blurb:"Warm amber fading into rose pink.", palette:["Amber","Rose pink"]},
     {name:"Blossom", blurb:"Soft pink and pearl white, light and pretty.", palette:["Rose pink","Pearl white"]},
-    {name:"Geode", blurb:"A crystal-clear centre ringed with purple and gold, like a cut stone.", palette:["Clear","Purple","Gold"]}
+    {name:"Geode", blurb:"Purple ringed with gold, like a cut stone.", palette:["Purple","Gold"]}
   ];
   var designs = DEFAULT_DESIGNS;
   function cleanDesigns(list){
@@ -58,7 +59,7 @@
     return list.filter(function(d){ return d && typeof d.name==="string" && d.name.trim(); }).slice(0,8).map(function(d){
       return {name:d.name.trim().slice(0,30), blurb:String(d.blurb||"").slice(0,160),
         photo:(typeof d.photo==="string" && /^designs\/themes\/[A-Za-z0-9_.-]{1,80}$/.test(d.photo)) ? d.photo : "",
-        palette:(Array.isArray(d.palette)?d.palette:[]).filter(function(c){ return COLOURS.some(function(x){ return x[0]===c; }); }).slice(0,6)};
+        palette:(Array.isArray(d.palette)?d.palette:[]).filter(function(c){ return COLOURS.some(function(x){ return x[0]===c; }); }).slice(0,MAX_COLOURS)};
     });
   }
   function findDesign(name){ for(var i=0;i<designs.length;i++) if(designs[i].name===name) return designs[i]; return null; }
@@ -73,7 +74,7 @@
     var d = JSON.parse(localStorage.getItem("resinate-draft")||"null");
     if(d && d.state && P.base[d.state.size]!=null) Object.assign(state, d.state);
     if(!Array.isArray(state.palette) || !state.palette.length) state.palette = ["Clear"];
-    state.palette = state.palette.filter(function(c){ return COLOURS.some(function(x){ return x[0]===c; }); }).slice(0,6);
+    state.palette = state.palette.filter(function(c){ return COLOURS.some(function(x){ return x[0]===c; }); }).slice(0,MAX_COLOURS);
     if(!state.palette.length) state.palette = ["Clear"];
     state.colours = state.palette.length;
     if(d && Array.isArray(d.cart)) cart = d.cart.filter(function(it){ return it && P.base[it.size]!=null; });
@@ -234,9 +235,9 @@
   function renderBuilder(){
     var st = state;
     renderDesignPick(); renderOwnBox();
-    var full = st.palette.length>=6;
+    var full = st.palette.length>=MAX_COLOURS;
     $("swatches").querySelectorAll("input").forEach(function(i){ i.checked = st.palette.indexOf(i.value)>=0; i.disabled = full && !i.checked; });
-    $("picked").textContent = st.palette.join(", ")+(full?" (6 is the most)":"");
+    $("picked").textContent = st.palette.join(", ")+(full?" (2 is the most; untick one to swap)":"");
     $("cDye").textContent = st.colours>=2 ? money(P.dye) : "Included";
     var sp = sparkleRange(st.size);
     $("cSparkle").textContent = sp ? range(sp[0],sp[1]) : "Ask us";
@@ -391,7 +392,7 @@
   }).join("");
   $("swatches").addEventListener("change", function(e){
     var v = e.target.value, i = state.palette.indexOf(v);
-    if(e.target.checked){ if(i<0 && state.palette.length<6) state.palette.push(v); }
+    if(e.target.checked){ if(i<0 && state.palette.length<MAX_COLOURS) state.palette.push(v); }
     else if(i>=0) state.palette.splice(i,1);
     if(!state.palette.length) state.palette = [v]; // always at least one colour
     state.colours = state.palette.length;
@@ -1316,7 +1317,7 @@
     }
     var row = e.target.closest("[data-i]"), c = e.target.getAttribute("data-c"); if(!row || !c) return;
     var pal = draftDesigns[+row.getAttribute("data-i")].palette, k = pal.indexOf(c);
-    if(e.target.checked){ if(k<0 && pal.length<6) pal.push(c); else if(k<0) e.target.checked = false; }
+    if(e.target.checked){ if(k<0 && pal.length<MAX_COLOURS) pal.push(c); else if(k<0) e.target.checked = false; }
     else if(k>=0) pal.splice(k,1);
   });
   $("designRows").addEventListener("click", function(e){
