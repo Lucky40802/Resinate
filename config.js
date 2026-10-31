@@ -8,7 +8,7 @@ window.RESINATE_CONFIG = {
   // How customers reach you. Leave any of these blank to hide it.
   contact: {
     instagram: "",   // handle without the @, e.g. "resinate.studio"
-    email: "",       // e.g. "hello@example.com"
+    email: "resinatedesigns.bhhs@gmail.com",
     phone: "0491 636 329"
   }
 };

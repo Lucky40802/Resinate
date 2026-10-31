@@ -5,6 +5,7 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
 ## What's on the site
 - **Shop:** what Resinate is and how a piece is made, the four sizes (Small about 100 ml, Medium about 150 ml, Large about 250 ml, XL about 400 ml), the themed designs (priced between a plain pour and a custom design, colours included; makers edit them and add photos on the dashboard) and the designer, where signed-in customers upload their own picture and words and see them on the preview, add-on prices by size, a builder that prices a piece as you go (with a live preview and a colour picker, so makers see exactly which colours were chosen), and an order form that holds several pieces. On phones, a bar at the bottom keeps the order total and a checkout button in reach.
 - **Checkout:** customers place an order and get a reference (like `RSN-AB12C`), the amount to pay, and the PayID or bank details to pay with. Custom inclusions and XL sparkle get a confirmed price from the team first.
+- **Message us:** a contact form; messages go straight to the maker dashboard (live), with a Reply button that opens an email, text or Instagram. The site also shows the phone number and email from `config.js`.
 - **Track order:** customers check an order with its reference and the phone, email or Instagram they ordered with.
 - **Our work:** a photo gallery the makers upload to.
 - **Accounts** (sign in with an emailed link, no password): anyone can make one.
@@ -13,7 +14,7 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
 - **Pre-orders:** every order is a pre-order; pieces are poured after they're ordered.
 - **Privacy & regulations** (`#policies`): all profit goes to charity, refunds within 7 days of buying (on top of Australian Consumer Law rights), and the privacy policy.
 - **Maker dashboard** (`#dashboard`), only for accounts with the `maker` role:
-  - Live orders, money received and owed, charts, and a list of what to make.
+  - Messages from the site (New / Replied / Done), live orders, money received and owed, charts, and a list of what to make.
   - Setting prices for custom work, recording payments (PayID, cash or card), copying messages for customers, and a spreadsheet export.
   - Prices (including the bundle discount), themed designs, payment details and gallery photos.
   - To log an order taken in person (say at the stall), build it in the shop while signed in as a maker and place it with the customer's name and contact.

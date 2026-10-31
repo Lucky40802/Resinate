@@ -6,6 +6,7 @@
 --                    contact and photo, but never their role: change roles here in the console only (see the end).
 -- resinate_staff     emails to make makers as soon as they sign up (console only; optional).
 -- resinate_settings  'prices' and 'payment'. Everyone can read them (the shop shows them); only makers change them.
+-- resinate_messages  messages sent from the site's "Message us" form; only makers read them
 -- resinate_orders    every order. Customers place one only through resinate_place_order(), which prices it on the
 --                    server; a signed-in customer can read their own orders; makers read and change all of them.
 -- resinate_photos    the "Our work" gallery. Files live in the public storage bucket 'resinate', with profile
@@ -309,6 +310,60 @@ language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function public.resinate_order_status(text, text) from public;
 grant execute on function public.resinate_order_status(text, text) to anon, authenticated;
+
+-- ── messages from the "Message us" form ─────────────────────────
+-- Anyone can send one through resinate_send_message() (rate-limited); only makers can read, mark or delete them.
+create table if not exists public.resinate_messages (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  name text not null check (char_length(name) between 1 and 120),
+  contact text not null check (char_length(contact) between 3 and 200),
+  order_ref text not null default '' check (char_length(order_ref) <= 20),
+  body text not null check (char_length(body) between 1 and 3000),
+  status text not null default 'New' check (status in ('New', 'Replied', 'Done')),
+  customer_id uuid references auth.users (id) on delete set null
+);
+create index if not exists resinate_messages_created on public.resinate_messages (created_at desc);
+alter table public.resinate_messages enable row level security;
+revoke all on public.resinate_messages from anon, authenticated;
+grant select, delete on public.resinate_messages to authenticated;
+grant update (status) on public.resinate_messages to authenticated;
+drop policy if exists "makers read messages" on public.resinate_messages;
+create policy "makers read messages" on public.resinate_messages for select to authenticated
+  using ((select private.resinate_role()) = 'maker');
+drop policy if exists "makers mark messages" on public.resinate_messages;
+create policy "makers mark messages" on public.resinate_messages for update to authenticated
+  using ((select private.resinate_role()) = 'maker') with check ((select private.resinate_role()) = 'maker');
+drop policy if exists "makers remove messages" on public.resinate_messages;
+create policy "makers remove messages" on public.resinate_messages for delete to authenticated
+  using ((select private.resinate_role()) = 'maker');
+
+create or replace function public.resinate_send_message(p_name text, p_contact text, p_ref text, p_body text)
+returns void language plpgsql volatile security definer set search_path = '' as $$
+begin
+  if char_length(btrim(coalesce(p_name, ''))) = 0 or char_length(btrim(coalesce(p_contact, ''))) < 3
+     or char_length(btrim(coalesce(p_body, ''))) = 0 then
+    raise exception 'Add your name, a way to reach you and a message' using errcode = '22023';
+  end if;
+  if (select count(*) from public.resinate_messages m where m.created_at > now() - interval '10 minutes') >= 30
+     or (select count(*) from public.resinate_messages m
+         where m.created_at > now() - interval '1 hour' and lower(m.contact) = lower(btrim(p_contact))) >= 5 then
+    raise exception 'Lots of messages are coming in right now. Try again a bit later, or call us.' using errcode = '53400';
+  end if;
+  insert into public.resinate_messages (name, contact, order_ref, body, customer_id)
+  values (left(btrim(p_name), 120), left(btrim(p_contact), 200), left(upper(btrim(coalesce(p_ref, ''))), 20),
+          left(btrim(p_body), 3000), auth.uid());
+end $$;
+revoke all on function public.resinate_send_message(text, text, text, text) from public;
+grant execute on function public.resinate_send_message(text, text, text, text) to anon, authenticated;
+
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'resinate_messages') then
+    alter publication supabase_realtime add table public.resinate_messages;
+  end if;
+end $$;
 
 -- live updates: the dashboard hears new and changed orders (row-level security still decides who sees them)
 do $$

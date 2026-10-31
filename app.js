@@ -258,7 +258,7 @@
       return '<div class="line"><span>'+esc(x.label)+'</span><span>'+esc(v)+'</span></div>';
     }).join("");
     $("each").textContent = est(q);
-    $("total").textContent = est({lo:q.lo*st.qty, hi:q.hi*st.qty, open:q.open});
+    $("total").textContent = $("bbTotal").textContent = est({lo:q.lo*st.qty, hi:q.hi*st.qty, open:q.open});
     var note = [];
     if(q.lo!==q.hi) note.push("Sparkle price depends on how much you add.");
     if(q.open.length) note.push("We'll confirm the price of your "+q.open.join(" and ")+" before you pay.");
@@ -346,18 +346,33 @@
     return cart.map(function(it){ var iq=quoteItem(it), n=it.qty||1; return "• "+(n>1?n+" × ":"")+itemSpec(it)+" — "+est({lo:iq.lo*n,hi:iq.hi*n,open:iq.open}); }).join("\n")+"\nEstimate: "+est(quoteCart(cart));
   }
 
-  function renderAll(){ renderPriceDisplays(); renderDesignList(); renderBuilder(); renderCart(); }
+  function renderAll(){ renderPriceDisplays(); renderDesignList(); renderBuilder(); renderCart(); $("factDesigns").textContent = designs.length; }
 
   // the phone checkout bar shows while there's something in the order and the checkout isn't on screen
-  var checkoutSeen = false;
+  var checkoutSeen = false, builderSeen = false, receiptSeen = false;
   function syncCartBar(){
-    var show = cart.length>0 && !checkoutSeen && (document.body.dataset.view||"shop")==="shop";
+    var shop = (document.body.dataset.view||"shop")==="shop";
+    // phones: while choosing options, a bar keeps this piece's price and Add in reach; otherwise the order bar shows
+    var build = shop && builderSeen && !receiptSeen;
+    $("buildbar").classList.toggle("show", build);
+    $("buildbar").setAttribute("aria-hidden", build?"false":"true");
+    $("bbAdd").tabIndex = build ? 0 : -1;
+    var show = !build && cart.length>0 && !checkoutSeen && shop;
     $("cartbar").classList.toggle("show", show);
     $("cartbar").setAttribute("aria-hidden", show?"false":"true");
     $("cartbar").querySelector("a").tabIndex = show ? 0 : -1;
   }
   if("IntersectionObserver" in window){
     new IntersectionObserver(function(es){ checkoutSeen = es[0].isIntersecting; syncCartBar(); }, {threshold:0.05}).observe($("checkout"));
+    new IntersectionObserver(function(es){ builderSeen = es[0].isIntersecting; syncCartBar(); }, {threshold:0.02}).observe($("builder"));
+    new IntersectionObserver(function(es){ receiptSeen = es[0].isIntersecting; syncCartBar(); }, {threshold:0.35}).observe(document.querySelector(".receipt"));
+    // highlight the menu link for the section being read
+    var spy = {};
+    document.querySelectorAll('header nav a[href^="#"]').forEach(function(a){ spy[a.getAttribute("href").slice(1)] = a; });
+    var spyIO = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ for(var k in spy) spy[k].classList.toggle("on", k===e.target.id); } });
+    }, {rootMargin:"-45% 0px -50% 0px"});
+    ["about","pricing","designs-sec","build","checkout","track","contact"].forEach(function(id){ if($(id)) spyIO.observe($(id)); });
   }
 
   $("builder").addEventListener("submit", function(e){ e.preventDefault(); });
@@ -392,7 +407,9 @@
     var n = cart.reduce(function(a,x){return a+(x.qty||1)},0);
     $("added").hidden = false;
     $("added").innerHTML = 'Added. '+n+(n===1?' piece':' pieces')+' in your order. <a href="#checkout">Go to checkout</a> or build another.';
+    toast("Added to your order ("+n+(n===1?" piece":" pieces")+")");
   });
+  $("bbAdd").addEventListener("click", function(){ $("addBtn").click(); });
   $("cart").addEventListener("click", function(e){
     var b = e.target.closest("[data-rm]"); if(!b) return;
     cart.splice(+b.getAttribute("data-rm"),1); saveDraft(); renderCart();
@@ -410,7 +427,10 @@
     if(CONTACT.phone) out.push('<a href="tel:'+esc(CONTACT.phone.replace(/[^0-9+]/g,""))+'">'+esc(CONTACT.phone)+'</a>');
     return out;
   }
-  (function(){ var c = contactLinks(); if(c.length){ $("contactLine").innerHTML = "Contact us: "+c.join(" · "); $("contactLine").hidden = false; } })();
+  (function(){ var c = contactLinks(); if(c.length){
+    $("contactLine").innerHTML = "Contact us: "+c.join(" · "); $("contactLine").hidden = false;
+    $("contactDirect").innerHTML = "Or reach us directly: "+c.join(" · "); $("contactDirect").hidden = false;
+  } })();
 
   // ---- copy helpers ----
   function copyText(text, btn, fallbackEl){
@@ -691,7 +711,7 @@
       if(session){ $("siCodeForm").hidden = true; $("siEmailForm").hidden = false; $("siMsg").hidden = true; }
       if(session && document.body.getAttribute("data-view")==="signin") location.replace("#profile");
       liveOrders(canSave);
-      if(canSave) loadOrders();
+      if(canSave){ loadOrders(); loadMessages(); } else { messages = []; renderMessages(); }
     });
   }
 
@@ -762,6 +782,8 @@
   }
   function prefillCheckout(){
     if(!profile || canSave || !pref("prefill", true)) return;
+    if(!$("mgName").value && profile.display_name) $("mgName").value = profile.display_name;
+    if(!$("mgContact").value && profile.contact) $("mgContact").value = profile.contact;
     if(!$("poName").value && profile.display_name) $("poName").value = profile.display_name;
     if(!$("poContact").value && profile.contact) $("poContact").value = profile.contact;
     if(!$("trContact").value && profile.contact) $("trContact").value = profile.contact;
@@ -877,8 +899,89 @@
     channel = sb.channel("resinate-orders").on("postgres_changes", {event:"*", schema:"public", table:"resinate_orders"}, function(payload){
       if(payload.eventType==="INSERT" && payload.new && payload.new.name) toast("New order from "+payload.new.name+" ("+payload.new.ref+")");
       clearTimeout(liveTimer); liveTimer = setTimeout(loadOrders, 400);
+    }).on("postgres_changes", {event:"*", schema:"public", table:"resinate_messages"}, function(payload){
+      if(payload.eventType==="INSERT" && payload.new && payload.new.name) toast("New message from "+payload.new.name);
+      clearTimeout(msgTimer); msgTimer = setTimeout(loadMessages, 400);
     }).subscribe();
   }
+
+  // ---- messages from the "Message us" form ----
+  var messages = [], msgTimer = null, confirmMsgDel = null;
+  function loadMessages(){
+    if(!sb || !canSave) return;
+    sb.from("resinate_messages").select("*").order("created_at",{ascending:false}).limit(200).then(function(r){
+      if(r.error){ $("msgList").innerHTML = '<div class="empty">Couldn\'t load messages ('+esc(errText(r.error))+').</div>'; return; }
+      messages = r.data || []; renderMessages();
+    });
+  }
+  function replyHref(m){
+    var c = String(m.contact||"").trim(), sub = "Resinate"+(m.order_ref?" order "+m.order_ref:"");
+    if(/^\S+@\S+\.\S+$/.test(c)) return "mailto:"+encodeURIComponent(c)+"?subject="+encodeURIComponent("Re: your message to "+sub)+"&body="+encodeURIComponent("Hi "+String(m.name||"").split(" ")[0]+",\n\n");
+    var digits = c.replace(/[^0-9+]/g,"");
+    if(digits.length>=8 && /^[0-9+ ()-]+$/.test(c)) return "sms:"+digits;
+    if(/^@?[A-Za-z0-9._]{2,30}$/.test(c)) return "https://instagram.com/"+encodeURIComponent(c.replace(/^@/,""));
+    return "";
+  }
+  function renderMessages(){
+    var fresh = messages.filter(function(m){ return m.status==="New"; }).length;
+    $("msgCount").hidden = !fresh; $("msgCount").textContent = fresh;
+    $("dashBadge").hidden = !fresh; $("dashBadge").textContent = fresh;
+    var f = $("msgFilter").value;
+    var list = messages.filter(function(m){ return f==="all" || (f==="open" ? m.status!=="Done" : m.status===f); });
+    if(!list.length){ $("msgList").innerHTML = '<div class="empty">'+(messages.length?"No messages match.":"No messages yet. Messages sent from the site's Message us form show up here.")+'</div>'; return; }
+    $("msgList").innerHTML = list.map(function(m){
+      var id = esc(m.id), when = new Date(m.created_at).toLocaleString(undefined,{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+      var href = replyHref(m);
+      return '<div class="msg" data-s="'+esc(m.status)+'"><div class="top"><span><b>'+esc(m.name)+'</b> <span class="spec">· '+esc(m.contact)+(m.order_ref?' · '+esc(m.order_ref):'')+'</span></span><span class="spec">'+esc(when)+' · '+esc(m.status)+'</span></div>'+
+        '<div class="body">'+esc(m.body)+'</div><div class="acts">'+
+        (href?'<a class="btn small" href="'+esc(href)+'" target="_blank" rel="noopener">Reply</a>':'')+
+        '<button type="button" class="btn small ghost" data-copyc="'+id+'">Copy contact</button>'+
+        '<select data-mstatus="'+id+'" aria-label="Status of message from '+esc(m.name)+'">'+["New","Replied","Done"].map(function(s){ return '<option'+(s===m.status?" selected":"")+'>'+s+'</option>'; }).join("")+'</select>'+
+        (confirmMsgDel===m.id ? '<span class="spec">Delete for good?</span><button class="btn small danger" type="button" data-mdel="'+id+'">Delete</button><button class="btn small ghost" type="button" data-mkeep="1">Keep</button>'
+          : '<button class="btn small ghost" type="button" data-mask="'+id+'">Delete</button>')+
+        '</div></div>';
+    }).join("");
+  }
+  $("msgFilter").addEventListener("change", renderMessages);
+  $("msgList").addEventListener("change", function(e){
+    var id = e.target.getAttribute("data-mstatus"); if(!id) return;
+    var st = e.target.value;
+    sb.from("resinate_messages").update({status:st}).eq("id", id).then(function(r){
+      if(r.error){ toast("Didn't save ("+errText(r.error)+")"); return; }
+      messages.forEach(function(m){ if(m.id===id) m.status = st; }); renderMessages();
+    });
+  });
+  $("msgList").addEventListener("click", function(e){
+    var b;
+    if((b = e.target.closest("[data-copyc]"))){
+      var m = messages.filter(function(x){ return x.id===b.getAttribute("data-copyc"); })[0];
+      if(m && navigator.clipboard) navigator.clipboard.writeText(m.contact).then(function(){ toast("Contact copied"); });
+    } else if((b = e.target.closest("[data-mask]"))){ confirmMsgDel = b.getAttribute("data-mask"); renderMessages(); }
+    else if(e.target.closest("[data-mkeep]")){ confirmMsgDel = null; renderMessages(); }
+    else if((b = e.target.closest("[data-mdel]"))){
+      var id = b.getAttribute("data-mdel");
+      sb.from("resinate_messages").delete().eq("id", id).then(function(r){
+        if(r.error){ toast("Didn't delete ("+errText(r.error)+")"); return; }
+        confirmMsgDel = null; messages = messages.filter(function(m){ return m.id!==id; }); renderMessages();
+      });
+    }
+  });
+  $("msgForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    if($("mgWebsite").value) return; // a bot filled the hidden field
+    var name = $("mgName").value.trim(), contact = $("mgContact").value.trim(), body = $("mgBody").value.trim();
+    if(!name){ showMsg("mgMsg","err","Add your name."); $("mgName").focus(); return; }
+    if(contact.length<3){ showMsg("mgMsg","err","Add a phone number, email or Instagram so we can reply."); $("mgContact").focus(); return; }
+    if(!body){ showMsg("mgMsg","err","Write your message."); $("mgBody").focus(); return; }
+    if(!sb){ showMsg("mgMsg","err","Messages can't be sent right now. Please call or email us instead."); return; }
+    $("mgSend").disabled = true;
+    sb.rpc("resinate_send_message", {p_name:name, p_contact:contact, p_ref:$("mgRef").value.trim(), p_body:body}).then(function(r){
+      if(r.error) throw r.error;
+      $("mgBody").value = ""; $("mgRef").value = "";
+      showMsg("mgMsg","ok","Thanks! Your message is with the team, and we'll reply to "+contact+".");
+    }).catch(function(err){ showMsg("mgMsg","err","Your message didn't send ("+errText(err)+"). Please try again, or call us."); })
+      .then(function(){ $("mgSend").disabled = false; });
+  });
 
   // ---- getting started checklist (makers) ----
   function renderStart(){

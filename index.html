@@ -384,6 +384,32 @@ img.thumb{object-fit:cover;display:block;background:var(--sunk)}
 #artThumb{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
 #ownBox label.btn:has(+ .vh:focus-visible){outline:3px solid var(--amber);outline-offset:2px}
+/* interaction polish */
+.btn{transition:filter .15s,transform .1s,background-color .15s,box-shadow .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost:hover{background:var(--sunk);filter:none}
+.btn:disabled{opacity:.55;cursor:not-allowed;filter:none;transform:none}
+input[type=text]:focus,input[type=tel]:focus,input[type=search]:focus,textarea:focus,select:focus{border-color:var(--resin);background:var(--surface)}
+nav a{transition:background-color .15s,color .15s}
+nav a.on{color:var(--ink);background:var(--sunk)}
+.faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:4px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);color:var(--resin);font-weight:600;transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq summary:hover{color:var(--resin)}
+.facts b.charity-fact{color:var(--amber)}
+.buildbar .btn{background:var(--amber);color:#1c1204}
+/* messages */
+.msgs{display:grid;gap:10px;margin-top:12px}
+.msg{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:6px}
+.msg[data-s="New"]{border-left:4px solid var(--amber)}
+.msg .top{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;justify-content:space-between}
+.msg .body{white-space:pre-wrap;overflow-wrap:anywhere}
+.msg .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#contactDirect a{font-weight:600}
+.contact a,#contactLine a{white-space:nowrap}
+.msg select,#msgFilter{width:auto;padding:6px 10px}
 /* policies */
 .policy{display:grid;gap:18px}
 .policy section{border:0;padding:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
@@ -400,12 +426,15 @@ img.thumb{object-fit:cover;display:block;background:var(--sunk)}
 .cartbar b{font-variant-numeric:tabular-nums}
 .cartbar .btn{padding:9px 18px;background:var(--amber);color:#1c1204}
 @media (max-width:860px){.cartbar{display:flex}}
-@media (max-width:640px){
+@media (max-width:1100px){
+  html{scroll-padding-top:116px}
   header .wrap{gap:6px 10px;padding-block:10px}
-  .brand{font-size:1.5rem}
   header nav{order:3;width:calc(100% + 32px);margin:0 -16px;padding:0 16px 2px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 24px),transparent)}
   header nav::-webkit-scrollbar{display:none}
   header nav a{white-space:nowrap;flex:none}
+}
+@media (max-width:640px){
+  .brand{font-size:1.5rem}
   .facts{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:16px 22px}
   .facts span{font-size:.8rem}
   .tablebox{overflow:visible;background:transparent;border:0}
@@ -433,7 +462,8 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       <a href="#build">Build yours</a>
       <a href="#checkout">Pre-order <span class="badge" id="cartBadge" hidden>0</span></a>
       <a href="#track">Track order</a>
-      <a href="#dashboard" class="team" id="dashLink" hidden>Dashboard</a>
+      <a href="#contact">Contact</a>
+      <a href="#dashboard" class="team" id="dashLink" hidden>Dashboard <span class="badge" id="dashBadge" hidden>0</span></a>
     </nav>
     <div class="row" style="gap:8px">
       <a href="#settings" class="iconbtn" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
@@ -448,15 +478,15 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     <div>
       <p class="eyebrow">Handmade epoxy &amp; UV resin</p>
       <h1>Poured by hand, <em>made to order.</em></h1>
-      <p class="lede">Pick a size, then make it yours with a printed design, extra colours, sparkle or a built-in LED. Order online or at our market stall and pay by PayID or bank transfer.</p>
+      <p class="lede">Pick a size and one of our designs, or upload your own. Add colours, sparkle or a built-in LED, see it on the preview, then pre-order online or at our market stall.</p>
       <div class="cta">
         <a class="btn" href="#build">Build your piece</a>
         <a class="btn ghost" href="#pricing">See prices</a>
       </div>
       <div class="facts">
         <div><b>4</b><span>sizes, Small to XL</span></div>
-        <div><b>5</b><span>ways to customise</span></div>
-        <div><b>PayID</b><span>or bank transfer</span></div>
+        <div><b id="factDesigns">6</b><span>themed designs</span></div>
+        <div><b class="charity-fact">100%</b><span>of profit to charity</span></div>
       </div>
     </div>
     <div class="pour">
@@ -562,7 +592,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   <section id="build">
     <div class="wrap">
       <div class="head">
-        <p class="eyebrow">Price check</p>
+        <p class="eyebrow">Step 4 · Build yours</p>
         <h2>Build your piece</h2>
         <p class="lede">See what your piece will cost, then add it to your order. Build as many pieces as you like.</p>
       </div>
@@ -711,13 +741,32 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
         <div class="paycard" id="trResult" hidden aria-live="polite"></div>
       </div>
     </div>
+    <div class="wrap po" id="contact" style="margin-top:48px">
+      <div class="head" style="margin:0">
+        <p class="eyebrow">Questions?</p>
+        <h2>Message us</h2>
+        <p class="lede">Ask about a custom piece, an order or anything else. Your message goes straight to the Resinate team, and we'll reply by the phone, email or Instagram you give us.</p>
+        <p class="contact" id="contactDirect" hidden></p>
+      </div>
+      <form class="panel" id="msgForm" novalidate>
+        <div class="field"><label for="mgName">Name</label><input type="text" id="mgName" autocomplete="name" maxlength="120"></div>
+        <div class="field"><label for="mgContact">Phone, email or Instagram</label><input type="text" id="mgContact" maxlength="200"></div>
+        <div class="field"><label for="mgRef">Order reference (if it's about an order)</label><input type="text" id="mgRef" placeholder="RSN-XXXXX" maxlength="20" autocapitalize="characters" spellcheck="false"></div>
+        <div class="field"><label for="mgBody">Message</label><textarea id="mgBody" maxlength="3000"></textarea></div>
+        <div class="hp" aria-hidden="true"><label for="mgWebsite">Leave this empty</label><input type="text" id="mgWebsite" tabindex="-1" autocomplete="off"></div>
+        <div id="mgMsg" hidden></div>
+        <div class="row"><button class="btn" type="submit" id="mgSend">Send message</button></div>
+      </form>
+    </div>
     <div class="wrap">
       <div class="faq">
         <details><summary>Will my piece look exactly like the photos?</summary><p>Close, but not exactly. Resin moves while it sets, so the swirls, bubbles and sparkle in every piece come out a little different. That's what makes yours one of a kind.</p></details>
-        <details><summary>Can I use my own picture or design?</summary><p>Yes. Pick "Your own design" in the builder and send us the image, or describe the 3D design you want. Our themed designs cost nothing extra; your own design adds a small charge. Add a note when you order and we'll be in touch.</p></details>
+        <details><summary>Can I use my own picture or design?</summary><p>Yes. Pick "Your own design" in the builder, sign in, and upload your picture or add words; you'll see it on the preview. Or describe the 3D design you want. Our themed designs add a little to the price, and your own design a bit more.</p></details>
         <details><summary>What can go inside a piece?</summary><p>Glitter, mica and flakes, plus custom inclusions like crystals, sand, dried leaves or small scenery. Tell us your idea and we'll quote it before we start.</p></details>
         <details><summary>How do I pay?</summary><p>By PayID or bank transfer using your order reference, or with cash or card at our market stall. Custom work gets a confirmed price before you pay.</p></details>
         <details><summary>How long does an order take?</summary><p>Each piece is poured and left to cure after you order, so it takes a little time. We'll let you know when you order, and you can check progress any time under Track order.</p></details>
+        <details><summary>Where does the money go?</summary><p>After materials are paid for, all of the profit goes to charity. See <a href="#policies">privacy &amp; regulations</a>.</p></details>
+        <details><summary>Can I get a refund?</summary><p>Yes, within 7 days of buying. Message us with your order reference. Your rights under Australian Consumer Law apply too; see <a href="#policies">privacy &amp; regulations</a>.</p></details>
         <details><summary>How do I look after my piece?</summary><p>Wipe it with a soft, damp cloth. Keep it away from high heat, and out of strong direct sun for long periods, which can slowly yellow resin over time.</p></details>
       </div>
     </div>
@@ -789,6 +838,12 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           <h3>To make</h3>
           <p class="sub">Pieces on orders that are New, Confirmed or Making</p>
           <div class="makegrid" id="makegrid"></div>
+        </div>
+
+        <div class="dsec" id="msgSec">
+          <div class="row" style="justify-content:space-between"><h3>Messages <span class="badge" id="msgCount" hidden>0</span></h3>
+            <select id="msgFilter" aria-label="Which messages"><option value="open">New and replied</option><option value="New">New</option><option value="all">All</option></select></div>
+          <div class="msgs" id="msgList"><div class="empty">Loading messages…</div></div>
         </div>
 
         <div class="tools">
@@ -1008,6 +1063,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           <ul>
             <li>Your name, and the phone number, email or Instagram you give us.</li>
             <li>What you order, your notes, and any picture or words you upload for your own design.</li>
+            <li>Messages you send us through the "Message us" form.</li>
             <li>If you make an account: your email address, and the name, contact and profile photo you choose to add.</li>
             <li>Payments you make, so we can match them to your order. We never see or store card or bank login details: you pay by PayID, bank transfer or cash.</li>
           </ul>
@@ -1112,6 +1168,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   </div>
 </footer>
 <div class="toast" id="toast" hidden role="status"></div>
+<div class="cartbar buildbar" id="buildbar" aria-hidden="true"><span>This piece · <b id="bbTotal"></b></span><button class="btn" type="button" id="bbAdd" tabindex="-1">Add to order</button></div>
 <div class="cartbar" id="cartbar" aria-hidden="true"><span><b id="cbCount">0 pieces</b> · <span id="cbTotal"></span></span><a class="btn" href="#checkout" tabindex="-1">Checkout</a></div>
 <script src="config.js"></script>
 <script src="vendor/supabase.js"></script>
