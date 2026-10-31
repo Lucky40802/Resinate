@@ -3,7 +3,7 @@
 The website for **Resinate**, a small handmade resin studio: epoxy and UV resin pieces, poured to order. Published with GitHub Pages at **https://lucky40802.github.io/Resinate/**.
 
 ## What's on the site
-- **Shop:** what Resinate is and how a piece is made, the four sizes (Small about 100 ml, Medium about 150 ml, Large about 250 ml, and XL), the themed designs (included in the price; makers edit them on the dashboard) and your-own-design option, add-on prices by size, a builder that prices a piece as you go (with a live preview and a colour picker, so makers see exactly which colours were chosen), and an order form that holds several pieces. On phones, a bar at the bottom keeps the order total and a checkout button in reach.
+- **Shop:** what Resinate is and how a piece is made, the four sizes (Small about 100 ml, Medium about 150 ml, Large about 250 ml, XL about 400 ml), the themed designs (priced between a plain pour and a custom design, colours included; makers edit them and add photos on the dashboard) and the designer, where signed-in customers upload their own picture and words and see them on the preview, add-on prices by size, a builder that prices a piece as you go (with a live preview and a colour picker, so makers see exactly which colours were chosen), and an order form that holds several pieces. On phones, a bar at the bottom keeps the order total and a checkout button in reach.
 - **Checkout:** customers place an order and get a reference (like `RSN-AB12C`), the amount to pay, and the PayID or bank details to pay with. Custom inclusions and XL sparkle get a confirmed price from the team first.
 - **Track order:** customers check an order with its reference and the phone, email or Instagram they ordered with.
 - **Our work:** a photo gallery the makers upload to.
@@ -11,6 +11,7 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
   - **Profile:** photo (cropped to a square on the device), name, contact for orders, and every order placed while signed in, with its progress and what's left to pay.
   - **Settings:** theme (system, light or dark), a still version of the home-page animation, filling in your details at checkout, remembering orders on the device, clearing the device, signing out (here or everywhere), and deleting the account.
 - **Pre-orders:** every order is a pre-order; pieces are poured after they're ordered.
+- **Privacy & regulations** (`#policies`): all profit goes to charity, refunds within 7 days of buying (on top of Australian Consumer Law rights), and the privacy policy.
 - **Maker dashboard** (`#dashboard`), only for accounts with the `maker` role:
   - Live orders, money received and owed, charts, and a list of what to make.
   - Setting prices for custom work, recording payments (PayID, cash or card), copying messages for customers, and a spreadsheet export.
@@ -20,7 +21,9 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
 ## Files
 | File | What it is |
 |---|---|
-| `index.html` | The whole site: shop, sign-in, profile, settings and the maker dashboard |
+| `index.html` | The pages and styles: shop, sign-in, profile, settings, privacy & regulations and the maker dashboard |
+| `app.js` | Everything the site does (kept out of the page so the security policy can block injected scripts) |
+| `theme.js` | Applies a saved light or dark theme before the page draws |
 | `config.js` | The Supabase project and the contact links shown to customers. Edit this to add your Instagram, email or phone |
 | `supabase/setup.sql` | The database: tables, row-level security, order pricing and lookup functions, and the photo bucket. Safe to run again after an update |
 | `vendor/supabase.js` | supabase-js 2.117.2 |
@@ -38,6 +41,9 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
 Supabase's built-in email sender only sends a few emails an hour. For a whole team, add your own sender under Authentication → SMTP Settings.
 
 ## How the data is protected
+- Everything travels over HTTPS (GitHub Pages and Supabase), and Supabase encrypts the stored data.
+- A Content-Security-Policy lets the page run only its own scripts and talk only to this Supabase project, which blocks injected scripts. Customer text is always escaped before it's shown.
+- Customers can upload pictures only into their own `designs/<account id>/` folder; the bucket takes images only, up to 10 MB, and order items keep only paths that match that folder.
 - Anyone can read prices, payment details and gallery photos.
 - Customers can't change orders. They place one through `resinate_place_order()`, which prices it on the server so the page can't set its own price, payments or status. They look one up through `resinate_order_status()`, which needs the reference and the matching contact and never returns a name or contact.
 - Every account has a row in `resinate_profiles`. People can change their own name, contact and photo, but not their role or email: the database only lets them update those three columns.

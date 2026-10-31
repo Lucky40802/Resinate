@@ -126,11 +126,12 @@ create policy "makers remove" on public.resinate_settings for delete to authenti
 create or replace function private.resinate_prices() returns jsonb language sql stable security definer set search_path = '' as $$
   with s as (select coalesce((select data from public.resinate_settings where id = 'prices'), '{}'::jsonb) as d),
   def as (select '{"base":{"S":599,"M":999,"L":1399,"XL":1999},"print":{"S":199,"M":199,"L":299,"XL":299},
-                   "dye":99,"sparkleLo":100,"sparkleHi":149,"sparkleXL":null,"led":{"L":449,"XL":399},
+                   "theme":{"S":99,"M":99,"L":199,"XL":199},"dye":99,"sparkleLo":100,"sparkleHi":149,"sparkleXL":null,"led":{"L":449,"XL":399},
                    "customMin":200,"bundleOff":0}'::jsonb as d)
-  select def.d || (s.d - 'base' - 'print' - 'led') || jsonb_build_object(
+  select def.d || (s.d - 'base' - 'print' - 'theme' - 'led') || jsonb_build_object(
     'base',  (def.d -> 'base')  || coalesce(s.d -> 'base',  '{}'::jsonb),
     'print', (def.d -> 'print') || coalesce(s.d -> 'print', '{}'::jsonb),
+    'theme', (def.d -> 'theme') || coalesce(s.d -> 'theme', '{}'::jsonb),
     'led',   (def.d -> 'led')   || coalesce(s.d -> 'led',   '{}'::jsonb))
   from s, def
 $$;
@@ -146,7 +147,7 @@ language plpgsql stable security definer set search_path = '' as $$
 declare
   p jsonb := private.resinate_prices();
   ds jsonb := private.resinate_designs();
-  it jsonb; sz text; q int; lo int; hi int; v int; dye_free boolean;
+  it jsonb; sz text; q int; lo int; hi int; v int; theme_ok boolean; dye_free boolean;
 begin
   low := 0; high := 0; is_open := false;
   for it in select e from jsonb_array_elements(p_items) e loop
@@ -154,8 +155,11 @@ begin
     q := (it ->> 'qty')::int;
     lo := (p -> 'base' ->> sz)::int; hi := lo;
     if (it ->> 'print')::boolean then v := (p -> 'print' ->> sz)::int; lo := lo + v; hi := hi + v; end if;
-    -- a themed design's own colours are included; other colours bring back the dye charge
-    dye_free := not coalesce((it ->> 'print')::boolean, false) and coalesce(it ->> 'theme', '') <> '' and exists (
+    -- a themed design has its own price, which includes its colours; other colours bring back the dye charge
+    theme_ok := not coalesce((it ->> 'print')::boolean, false) and coalesce(it ->> 'theme', '') <> ''
+                and exists (select 1 from jsonb_array_elements(ds) d where d ->> 'name' = it ->> 'theme');
+    if theme_ok then v := coalesce((p -> 'theme' ->> sz)::int, 0); lo := lo + v; hi := hi + v; end if;
+    dye_free := theme_ok and exists (
       select 1 from jsonb_array_elements(ds) d
       where d ->> 'name' = it ->> 'theme'
         and not exists (select 1 from jsonb_array_elements_text(coalesce(it -> 'palette', '[]'::jsonb)) c where not ((d -> 'palette') ? c)));
@@ -227,7 +231,8 @@ begin
     raise exception 'An order needs between 1 and 20 lines' using errcode = '22023';
   end if;
   -- palette: the colour names picked in the builder (up to 6); the dye charge counts at least that many colours
-  -- theme: the name of one of our themed designs (included in the price), or empty
+  -- theme: the name of one of our themed designs, or empty
+  -- art / artText / artNote: a customer's own design (their uploaded picture's path, words, and a description)
   select jsonb_agg(jsonb_build_object(
       'size', e ->> 'size',
       'qty', coalesce((e ->> 'qty')::int, 1),
@@ -235,6 +240,9 @@ begin
       'colours', least(greatest(coalesce((e ->> 'colours')::int, 1), jsonb_array_length(pal.p), 1), 6),
       'palette', pal.p,
       'theme', left(coalesce(e ->> 'theme', ''), 30),
+      'art', case when coalesce(e ->> 'art', '') ~ '^designs/[0-9a-f-]{36}/[A-Za-z0-9_.-]{1,80}$' then e ->> 'art' else '' end,
+      'artText', left(coalesce(e ->> 'artText', ''), 40),
+      'artNote', left(coalesce(e ->> 'artNote', ''), 300),
       'sparkle', coalesce((e ->> 'sparkle')::boolean, false),
       'led', coalesce((e ->> 'led')::boolean, false) and (e ->> 'size') in ('L', 'XL'),
       'custom', coalesce((e ->> 'custom')::boolean, false),
@@ -342,11 +350,13 @@ drop policy if exists "resinate editors delete" on storage.objects;
 drop policy if exists "resinate add files" on storage.objects;
 create policy "resinate add files" on storage.objects for insert to authenticated
   with check (bucket_id = 'resinate' and ((select private.resinate_role()) = 'maker'
-              or name like 'avatars/' || (select auth.uid())::text || '/%'));
+              or name like 'avatars/' || (select auth.uid())::text || '/%'
+              or name like 'designs/' || (select auth.uid())::text || '/%'));
 drop policy if exists "resinate read files" on storage.objects;
 create policy "resinate read files" on storage.objects for select to authenticated
   using (bucket_id = 'resinate' and ((select private.resinate_role()) = 'maker'
-         or name like 'avatars/' || (select auth.uid())::text || '/%'));
+         or name like 'avatars/' || (select auth.uid())::text || '/%'
+         or name like 'designs/' || (select auth.uid())::text || '/%'));
 drop policy if exists "resinate replace files" on storage.objects;
 create policy "resinate replace files" on storage.objects for update to authenticated
   using (bucket_id = 'resinate' and name like 'avatars/' || (select auth.uid())::text || '/%')
@@ -354,7 +364,8 @@ create policy "resinate replace files" on storage.objects for update to authenti
 drop policy if exists "resinate remove files" on storage.objects;
 create policy "resinate remove files" on storage.objects for delete to authenticated
   using (bucket_id = 'resinate' and ((select private.resinate_role()) = 'maker'
-         or name like 'avatars/' || (select auth.uid())::text || '/%'));
+         or name like 'avatars/' || (select auth.uid())::text || '/%'
+         or name like 'designs/' || (select auth.uid())::text || '/%'));
 
 -- ── roles: console only ──────────────────────────────────────────
 -- Everyone who signs up is a customer. To make someone a maker (they can open the dashboard, and change
