@@ -9,6 +9,6 @@ window.RESINATE_CONFIG = {
   contact: {
     instagram: "",   // handle without the @, e.g. "resinate.studio"
     email: "",       // e.g. "hello@example.com"
-    phone: ""        // e.g. "0400 000 000"
+    phone: "0491 636 329"
   }
 };
