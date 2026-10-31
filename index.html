@@ -153,6 +153,8 @@ section+section{border-top:1px solid var(--line)}
 .size .blob{display:block;border-radius:40% 40% 10px 10px;background:linear-gradient(160deg,color-mix(in srgb,var(--resin) 75%,transparent),color-mix(in srgb,var(--resin) 20%,transparent));border:1px solid color-mix(in srgb,var(--resin) 40%,transparent)}
 .size .price{font-family:var(--display);font-size:2.4rem;line-height:1}
 .size .incl{color:var(--muted);font-size:.9rem}
+.size .vol{color:var(--ink);font-weight:600}
+.seg span small.ml{font-size:.76rem;opacity:.85}
 
 /* add-on chart */
 .tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
@@ -347,6 +349,32 @@ footer{border-top:1px solid var(--line);padding-block:28px;color:var(--muted);fo
 .preview{display:grid;place-items:center;border-radius:12px;background:radial-gradient(120% 90% at 50% 20%,color-mix(in srgb,var(--bg) 12%,transparent),transparent 70%);padding:6px 0 0}
 .preview svg{width:100%;max-width:260px;height:auto;display:block}
 .preview figcaption{font-size:.8rem;opacity:.7;text-align:center;margin-top:2px}
+/* themed designs */
+.designs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.design{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;align-content:start}
+.design .thumb{width:100%;aspect-ratio:16/10;border-radius:10px;border:1px solid var(--line)}
+.design h3{font-size:1.45rem}
+.design p{margin:0;color:var(--muted);font-size:.92rem}
+.design .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.design .incl{font-size:.82rem;font-weight:600;color:var(--ok)}
+.design.own{border-style:dashed}
+.design.own .incl{color:var(--warn)}
+.thumb.plain{background:repeating-linear-gradient(135deg,#ffffff 0 8px,#e3eeee 8px 16px)}
+.thumb.own{display:grid;place-items:center;background:var(--sunk);color:var(--muted)}
+.dpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.dpick label{cursor:pointer;position:relative}
+.dpick input{position:absolute;opacity:0;pointer-events:none}
+.dpick span{display:grid;gap:4px;padding:8px;border:1px solid var(--line);border-radius:10px;font-size:.86rem;font-weight:600;line-height:1.2;height:100%}
+.dpick span small{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.dpick i{display:block;height:34px;border-radius:7px;border:1px solid var(--line)}
+.dpick input:checked+span{border-color:var(--resin);background:color-mix(in srgb,var(--resin) 12%,transparent);box-shadow:inset 0 0 0 1px var(--resin)}
+.dpick input:focus-visible+span{outline:3px solid var(--amber);outline-offset:2px}
+.drow{display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.drow:first-child{border-top:0}
+.drow .swatches{margin-top:6px}
+.drow .sw span{width:24px;height:24px}
+.drow .sw input:checked+span::after{left:8px;top:4px;width:6px;height:11px;border-width:0 2px 2px 0}
+@media (max-width:640px){.drow{grid-template-columns:1fr}}
 /* checkout bar on phones */
 .cartbar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:6;display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 18px;border-radius:999px;background:var(--ink);color:var(--bg);box-shadow:0 14px 34px -12px rgba(0,0,0,.55);transform:translateY(140%);visibility:hidden;transition:transform .25s,visibility .25s}
 .cartbar.show{transform:none;visibility:visible}
@@ -382,8 +410,9 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     <nav aria-label="Sections">
       <a href="#about">About</a>
       <a href="#pricing">Prices</a>
+      <a href="#designs-sec">Designs</a>
       <a href="#build">Build yours</a>
-      <a href="#checkout">Order &amp; pay <span class="badge" id="cartBadge" hidden>0</span></a>
+      <a href="#checkout">Pre-order <span class="badge" id="cartBadge" hidden>0</span></a>
       <a href="#track">Track order</a>
       <a href="#dashboard" class="team" id="dashLink" hidden>Dashboard</a>
     </nav>
@@ -477,16 +506,27 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       <div class="head">
         <p class="eyebrow">Step 1 · Choose a size</p>
         <h2>Four sizes</h2>
-        <p class="lede">Every piece comes in one clear or single-colour pour. Add-ons below are priced per piece.</p>
+        <p class="lede">Every piece comes in one clear or single-colour pour, or in any of our themed designs. Add-ons below are priced per piece.</p>
       </div>
       <div class="sizes" id="sizes"></div>
+    </div>
+  </section>
+
+  <section id="designs-sec">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Step 2 · Pick a design</p>
+        <h2>Our designs</h2>
+        <p class="lede">Each of our themed designs, colours and all, comes in the base price of any size. Want something that's only yours? Send us your own picture or idea for a small extra charge.</p>
+      </div>
+      <div class="designs" id="designList"></div>
     </div>
   </section>
 
   <section id="addons">
     <div class="wrap">
       <div class="head">
-        <p class="eyebrow">Step 2 · Make it yours</p>
+        <p class="eyebrow">Step 3 · Make it yours</p>
         <h2>Add-ons by size</h2>
         <p class="lede">Some add-ons cost more on bigger pieces because they use more material.</p>
       </div>
@@ -514,8 +554,12 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
             <div class="seg" id="sizeSeg"></div>
           </fieldset>
           <fieldset>
+            <legend>Design</legend>
+            <div class="dpick" id="designPick"></div>
+            <p class="hint muted" id="designHint" style="margin:0;font-size:.88rem"></p>
+          </fieldset>
+          <fieldset>
             <legend>Add-ons</legend>
-            <label class="opt"><input type="checkbox" id="print"><span><span class="t">Printed design</span><br><span class="d">Your image or a custom 3D design</span></span><span class="c" id="cPrint"></span></label>
             <div class="opt" style="cursor:default">
               <span></span>
               <span><span class="t" id="colLabel">Colours</span><br><span class="d">Pick up to 6. 1 colour is included; 2 or more adds the dye charge.</span>
@@ -555,9 +599,9 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   <section id="checkout">
     <div class="wrap po">
       <div class="head" style="margin:0">
-        <p class="eyebrow">Order &amp; pay</p>
-        <h2>Reserve your pieces</h2>
-        <p class="lede">Each piece is poured after you order, so it's made for you.</p>
+        <p class="eyebrow">Pre-order &amp; pay</p>
+        <h2>Pre-order your pieces</h2>
+        <p class="lede">Every piece is a pre-order: we pour it after you order, so it's made for you. Order online here or at our market stall.</p>
         <ol class="steps" style="margin-top:12px">
           <li><span>Build your pieces above and add your details here.</span></li>
           <li><span>Pay by PayID or bank transfer, using your order reference so we can match it. Orders with a custom inclusion or XL sparkle get a confirmed price from us first.</span></li>
@@ -638,7 +682,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     <div class="wrap">
       <div class="faq">
         <details><summary>Will my piece look exactly like the photos?</summary><p>Close, but not exactly. Resin moves while it sets, so the swirls, bubbles and sparkle in every piece come out a little different. That's what makes yours one of a kind.</p></details>
-        <details><summary>Can I use my own picture or design?</summary><p>Yes. Add a printed design and send us the image, or describe the 3D design you want. Add a note when you order and we'll be in touch.</p></details>
+        <details><summary>Can I use my own picture or design?</summary><p>Yes. Pick "Your own design" in the builder and send us the image, or describe the 3D design you want. Our themed designs cost nothing extra; your own design adds a small charge. Add a note when you order and we'll be in touch.</p></details>
         <details><summary>What can go inside a piece?</summary><p>Glitter, mica and flakes, plus custom inclusions like crystals, sand, dried leaves or small scenery. Tell us your idea and we'll quote it before we start.</p></details>
         <details><summary>How do I pay?</summary><p>By PayID or bank transfer using your order reference, or with cash or card at our market stall. Custom work gets a confirmed price before you pay.</p></details>
         <details><summary>How long does an order take?</summary><p>Each piece is poured and left to cure after you order, so it takes a little time. We'll let you know when you order, and you can check progress any time under Track order.</p></details>
@@ -748,7 +792,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
                 <div class="field"><label for="pbXL">XL $</label><input type="text" inputmode="decimal" id="pbXL"></div>
               </div>
             </div>
-            <div class="field"><span class="lbl">Printed design</span>
+            <div class="field"><span class="lbl">Your own design (custom print or 3D)</span>
               <div class="settings">
                 <div class="field"><label for="ppS">Small $</label><input type="text" inputmode="decimal" id="ppS"></div>
                 <div class="field"><label for="ppM">Medium $</label><input type="text" inputmode="decimal" id="ppM"></div>
@@ -766,9 +810,23 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
               <div class="field"><label for="pCustom">Custom inclusion from $</label><input type="text" inputmode="decimal" id="pCustom"></div>
               <div class="field"><label for="pBundle">Bundle discount $</label><input type="text" inputmode="decimal" id="pBundle" placeholder="0 = coming soon"></div>
             </div>
-            <p class="hint muted">The bundle discount comes off any piece with a printed design, 2 or more colours and sparkle.</p>
+            <p class="hint muted">The bundle discount comes off any piece with its own design, 2 or more colours and sparkle.</p>
             <div id="priceMsg" hidden></div>
             <div class="row"><button class="btn" type="submit">Save prices</button><button class="btn ghost" type="button" id="priceReset">Undo changes</button></div>
+          </form>
+        </div>
+
+        <div class="dsec" id="designsSec" hidden>
+          <div class="head" style="margin:0">
+            <p class="eyebrow">Makers</p>
+            <h3>Designs</h3>
+            <p class="lede">The themed designs customers can pick at no extra cost. Picking one fills in its colours, which customers can still change. Up to 8.</p>
+          </div>
+          <form class="panel" id="designForm" novalidate>
+            <div id="designRows"></div>
+            <div class="row"><button class="btn small ghost" type="button" id="designAdd">Add a design</button></div>
+            <div id="designMsg" hidden></div>
+            <div class="row"><button class="btn" type="submit">Save designs</button><button class="btn ghost" type="button" id="designUndo">Undo changes</button><button class="btn ghost" type="button" id="designDefaults">Use the starter designs</button></div>
           </form>
         </div>
 
@@ -776,7 +834,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           <div class="head" style="margin:0">
             <p class="eyebrow">Makers</p>
             <h3>Payment details</h3>
-            <p class="lede">Customers see these on the Order &amp; pay section and in the messages you copy. Leave a field blank to hide it.</p>
+            <p class="lede">Customers see these on the Pre-order section and in the messages you copy. Leave a field blank to hide it.</p>
           </div>
           <form class="panel" id="setForm" novalidate>
             <div class="settings two">
@@ -796,6 +854,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           <div class="notes">
             <div><b>Custom inclusions</b>Crystals, scenery and custom requests are up to the sales agent. Call Sap for pricing and details. Range starts at $2.</div>
             <div><b>XL sparkle</b>Not on the price list. Quote it case by case, or set a price above.</div>
+            <div><b>LED stand</b>Once the first stand is built and costed, set its price under LED, Large and LED, XL above.</div>
             <div><b>Bundle pricing</b>Print + dye + sparkle bundle will be cheaper than separate add-ons. Set the discount in Prices once it's decided.</div>
           </div>
         </div>
@@ -979,7 +1038,9 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
 
   // ---- prices (cents). Editors override these from the dashboard (resinate_settings 'prices'). ----
   // Keep the defaults and rules in step with private.resinate_quote() in supabase/setup.sql.
-  var SIZES = [{k:"S",name:"Small",h:30},{k:"M",name:"Medium",h:46},{k:"L",name:"Large",h:62},{k:"XL",name:"XL",h:78}];
+  // ml: rough amount of resin in each size (XL hasn't been measured yet)
+  var SIZES = [{k:"S",name:"Small",h:30,ml:100},{k:"M",name:"Medium",h:46,ml:150},{k:"L",name:"Large",h:62,ml:250},{k:"XL",name:"XL",h:78,ml:null}];
+  function volText(k){ for(var i=0;i<SIZES.length;i++) if(SIZES[i].k===k) return SIZES[i].ml ? "about "+SIZES[i].ml+" ml" : "over 250 ml"; return ""; }
   var DEFAULT_PRICES = {
     base:{S:599,M:999,L:1399,XL:1999},
     print:{S:199,M:199,L:299,XL:299},
@@ -1014,7 +1075,30 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   var COLOURS = [["Clear","#e8f2f1"],["Ocean teal","#0d8a8c"],["Deep blue","#24509e"],["Sky blue","#7cc3e6"],["Emerald","#2f9a5c"],["Purple","#7d4fb0"],
     ["Rose pink","#e48aa8"],["Red","#c0392b"],["Amber","#cf7a1c"],["Gold","#d9a63a"],["Pearl white","#f4f1ea"],["Black","#1d1d1f"]];
   function colourHex(name){ for(var i=0;i<COLOURS.length;i++) if(COLOURS[i][0]===name) return COLOURS[i][1]; return "#9cc"; }
-  var state = {size:"M", print:false, colours:1, palette:["Clear"], sparkle:false, led:false, custom:false, customNote:"", qty:1};
+  // themed designs: included in the base price. Makers change them on the dashboard (resinate_settings 'designs').
+  var DEFAULT_DESIGNS = [
+    {name:"Ocean wave", blurb:"Layers of teal and blue breaking over white lacing, like a wave on the sand.", palette:["Ocean teal","Sky blue","Pearl white"]},
+    {name:"Forest", blurb:"Deep greens with a touch of gold, like light through the leaves.", palette:["Emerald","Gold"]},
+    {name:"Galaxy", blurb:"Night-sky blues and purples, best with sparkle for the stars.", palette:["Deep blue","Purple","Black"]},
+    {name:"Sunset", blurb:"Warm amber fading into rose and gold.", palette:["Amber","Rose pink","Gold"]},
+    {name:"Blossom", blurb:"Soft pink and pearl white, light and pretty.", palette:["Rose pink","Pearl white"]},
+    {name:"Geode", blurb:"A crystal-clear centre ringed with purple and gold, like a cut stone.", palette:["Clear","Purple","Gold"]}
+  ];
+  var designs = DEFAULT_DESIGNS;
+  function cleanDesigns(list){
+    if(!Array.isArray(list)) return DEFAULT_DESIGNS;
+    return list.filter(function(d){ return d && typeof d.name==="string" && d.name.trim(); }).slice(0,8).map(function(d){
+      return {name:d.name.trim().slice(0,30), blurb:String(d.blurb||"").slice(0,160),
+        palette:(Array.isArray(d.palette)?d.palette:[]).filter(function(c){ return COLOURS.some(function(x){ return x[0]===c; }); }).slice(0,6)};
+    });
+  }
+  function findDesign(name){ for(var i=0;i<designs.length;i++) if(designs[i].name===name) return designs[i]; return null; }
+  function designBg(pal){
+    var cols = (pal&&pal.length?pal:["Clear"]).map(colourHex);
+    if(cols.length===1) cols.push(cols[0]);
+    return "linear-gradient(160deg,"+cols.join(",")+")";
+  }
+  var state = {size:"M", print:false, theme:"", colours:1, palette:["Clear"], sparkle:false, led:false, custom:false, customNote:"", qty:1};
   var cart = [];
   try{
     var d = JSON.parse(localStorage.getItem("resinate-draft")||"null");
@@ -1034,30 +1118,32 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       var w = 26 + s.h*0.9;
       return '<div class="size"><div class="top"><span class="code">'+s.k+'</span><i class="blob" style="width:'+w+'px;height:'+s.h+'px"></i></div>'+
         '<h3>'+s.name+'</h3><div class="price num">'+money(P.base[s.k])+'</div>'+
-        '<p class="incl">'+(ledPrice(s.k)?"LED light available":"Clear or one colour")+'</p></div>';
+        '<p class="incl"><b class="vol">'+volText(s.k).replace(/^a/,"A").replace(/^o/,"O")+' of resin</b><br>'+(ledPrice(s.k)?"LED light available":"Clear or one colour")+'</p></div>';
     }).join("");
     $("sizeSeg").innerHTML = SIZES.map(function(s){
-      return '<label><input type="radio" name="size" id="size'+s.k+'" value="'+s.k+'"'+(s.k===state.size?" checked":"")+'><span><b>'+s.name+'</b><small>'+money(P.base[s.k])+'</small></span></label>';
+      return '<label><input type="radio" name="size" id="size'+s.k+'" value="'+s.k+'"'+(s.k===state.size?" checked":"")+'><span><b>'+s.name+'</b><small>'+money(P.base[s.k])+'</small><small class="ml">'+(s.ml?"~"+s.ml+" ml":"250 ml+")+'</small></span></label>';
     }).join("");
     function cells(fn){ return SIZES.map(function(s){ return fn(s.k).replace('<td class="p', '<td data-l="'+s.name+'" class="p'); }).join(""); }
     $("addonRows").innerHTML =
-      '<tr><td><b>Printed design</b><span class="sub">Your own image or custom 3D design set into the resin</span></td>'+cells(function(k){return '<td class="p">'+money(P.print[k])+'</td>'})+'</tr>'+
+      '<tr><td><b>Your own design</b><span class="sub">Your own image or a custom 3D design set into the resin. Our themed designs are included in the base price.</span></td>'+cells(function(k){return '<td class="p">'+money(P.print[k])+'</td>'})+'</tr>'+
       '<tr><td><b>Colour dye</b><span class="sub">Charged when you pick 2 or more colours. One colour is included.</span></td>'+cells(function(){return '<td class="p">'+money(P.dye)+'</td>'})+'</tr>'+
       '<tr><td><b>Sparkle</b><span class="sub">Glitter, mica or flakes. Price depends on how much you want.</span></td>'+cells(function(k){var r=sparkleRange(k); return r?'<td class="p">'+range(r[0],r[1])+'</td>':'<td class="p ask">Ask us</td>'})+'</tr>'+
       '<tr><td><b>LED light</b><span class="sub">Light-up base for larger pieces</span></td>'+cells(function(k){var l=ledPrice(k); return l?'<td class="p">'+money(l)+'</td>':'<td class="p na">Not available</td>'})+'</tr>'+
       '<tr><td><b>Custom inclusions</b><span class="sub">Crystals, scenery, or a theme like sand for a wave or leaves for a nature piece. We quote each one.</span></td>'+cells(function(){return '<td class="p">from '+short(P.customMin)+'</td>'})+'</tr>';
     $("bundleBox").innerHTML = P.bundleOff>0
-      ? '<span class="pill ok">Bundle deal</span><div style="min-width:0;flex:1 1 260px"><strong>Save '+money(P.bundleOff)+' on the full modification bundle</strong><p>Add a printed design, 2 or more colours and sparkle to one piece and the discount comes off automatically.</p></div>'
-      : '<span class="pill warn">Coming soon</span><div style="min-width:0;flex:1 1 260px"><strong>Full modification bundle</strong><p>Printed design, colour dye and sparkle together will cost less than adding each one. Bundle prices are on the way; ask us at the stall.</p></div>';
+      ? '<span class="pill ok">Bundle deal</span><div style="min-width:0;flex:1 1 260px"><strong>Save '+money(P.bundleOff)+' on the full modification bundle</strong><p>Add your own design, 2 or more colours and sparkle to one piece and the discount comes off automatically.</p></div>'
+      : '<span class="pill warn">Coming soon</span><div style="min-width:0;flex:1 1 260px"><strong>Full modification bundle</strong><p>Your own design, colour dye and sparkle together will cost less than adding each one. Bundle prices are on the way; ask us at the stall.</p></div>';
     $("cCustom").textContent = "from "+short(P.customMin);
   }
 
   // ---- quoting ----
   function quoteItem(it){
-    var lines = [{label:sizeName(it.size)+" piece", lo:P.base[it.size], hi:P.base[it.size]}];
+    var lines = [{label:sizeName(it.size)+" piece ("+volText(it.size)+")", lo:P.base[it.size], hi:P.base[it.size]}];
     var open = [];
-    if(it.print) lines.push({label:"Printed design", lo:P.print[it.size], hi:P.print[it.size]});
-    if(it.colours>=2) lines.push({label:"Colour dye ("+it.colours+" colours)", lo:P.dye, hi:P.dye});
+    var free = themeColoursFree(it);
+    if(it.theme && !it.print) lines.push({label:it.theme+" design"+(free && it.colours>=2?", with its colours":""), lo:0, hi:0, text:"Included"});
+    if(it.print) lines.push({label:"Your own design", lo:P.print[it.size], hi:P.print[it.size]});
+    if(it.colours>=2 && !free) lines.push({label:"Colour dye ("+it.colours+" colours)", lo:P.dye, hi:P.dye});
     if(it.sparkle){
       var sp = sparkleRange(it.size);
       if(sp) lines.push({label:"Sparkle", lo:sp[0], hi:sp[1]});
@@ -1079,7 +1165,8 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   function est(q){ return (q.open.length?"from ":"")+range(q.lo,q.hi); }
   function itemSpec(it){
     var bits = [sizeName(it.size)];
-    if(it.print) bits.push("printed design");
+    if(it.theme) bits.push(it.theme+" design");
+    if(it.print) bits.push("own design");
     if(Array.isArray(it.palette) && it.palette.length) bits.push(it.palette.join(", "));
     else if(it.colours>=2) bits.push(it.colours+" colours");
     if(it.sparkle) bits.push("sparkle");
@@ -1088,9 +1175,44 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     return bits.join(" · ");
   }
 
+  // a themed design's own colours are included; adding other colours brings back the dye charge (same rule in setup.sql)
+  function themeColoursFree(it){
+    var d = !it.print && it.theme ? findDesign(it.theme) : null;
+    return !!d && (it.palette||[]).every(function(c){ return d.palette.indexOf(c)>=0; });
+  }
+  function designKey(st){ return st.print ? "own" : (st.theme && findDesign(st.theme) ? st.theme : ""); }
+  function renderDesignList(){
+    $("designList").innerHTML = designs.map(function(d){
+      return '<article class="design"><div class="thumb" style="background:'+designBg(d.palette)+'"></div><h3>'+esc(d.name)+'</h3>'+(d.blurb?'<p>'+esc(d.blurb)+'</p>':'')+
+        '<div class="foot"><span class="incl">Included in the price</span><button type="button" class="btn small ghost" data-use="'+esc(d.name)+'">Use this design</button></div></article>';
+    }).join("")+
+      '<article class="design own"><div class="thumb own"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.6"/></svg></div><h3>Your own design</h3><p>Your photo, logo or artwork printed into the resin, or a custom 3D design.</p>'+
+      '<div class="foot"><span class="incl">From '+short(Math.min(P.print.S,P.print.M,P.print.L,P.print.XL))+'</span><button type="button" class="btn small ghost" data-use="own">Use your own</button></div></article>';
+  }
+  function renderDesignPick(){
+    var st = state, key = designKey(st);
+    var opts = [{k:"", n:"Plain pour", sub:"Included", bg:"", cls:"plain"}].concat(
+      designs.map(function(d){ return {k:d.name, n:d.name, sub:"Included", bg:designBg(d.palette)}; }),
+      [{k:"own", n:"Your own design", sub:"+"+money(P.print[st.size]), cls:"own"}]);
+    $("designPick").innerHTML = opts.map(function(o){
+      return '<label><input type="radio" name="design" value="'+esc(o.k)+'"'+(o.k===key?" checked":"")+'><span><i class="thumb '+(o.cls||"")+'"'+(o.bg?' style="background:'+o.bg+'"':'')+'></i>'+esc(o.n)+'<small>'+esc(o.sub)+'</small></span></label>';
+    }).join("");
+    var d = findDesign(key);
+    $("designHint").textContent = key==="own" ? "Send us your picture or describe your idea in the notes when you order."
+      : d ? (d.blurb ? d.blurb+" " : "")+"Its colours are included; adding others adds the dye charge."
+      : "One clear or single-colour pour, with any add-ons you choose.";
+  }
+  function useDesign(key){
+    state.print = key==="own";
+    state.theme = (key && key!=="own") ? key : "";
+    var d = findDesign(state.theme);
+    if(d && d.palette.length){ state.palette = d.palette.slice(); state.colours = state.palette.length; }
+    renderBuilder(); saveDraft();
+  }
+
   function renderBuilder(){
     var st = state;
-    $("cPrint").textContent = money(P.print[st.size]);
+    renderDesignPick();
     var full = st.palette.length>=6;
     $("swatches").querySelectorAll("input").forEach(function(i){ i.checked = st.palette.indexOf(i.value)>=0; i.disabled = full && !i.checked; });
     $("picked").textContent = st.palette.join(", ")+(full?" (6 is the most)":"");
@@ -1195,7 +1317,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     return cart.map(function(it){ var iq=quoteItem(it), n=it.qty||1; return "• "+(n>1?n+" × ":"")+itemSpec(it)+" — "+est({lo:iq.lo*n,hi:iq.hi*n,open:iq.open}); }).join("\n")+"\nEstimate: "+est(quoteCart(cart));
   }
 
-  function renderAll(){ renderPriceDisplays(); renderBuilder(); renderCart(); }
+  function renderAll(){ renderPriceDisplays(); renderDesignList(); renderBuilder(); renderCart(); }
 
   // the phone checkout bar shows while there's something in the order and the checkout isn't on screen
   var checkoutSeen = false;
@@ -1210,8 +1332,14 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   }
 
   $("sizeSeg").addEventListener("change", function(e){ state.size = e.target.value; renderBuilder(); saveDraft(); });
-  ["print","sparkle","led","custom"].forEach(function(k){
+  ["sparkle","led","custom"].forEach(function(k){
     $(k).addEventListener("change", function(){ state[k] = this.checked; renderBuilder(); saveDraft(); });
+  });
+  $("designPick").addEventListener("change", function(e){ if(e.target.name==="design") useDesign(e.target.value); });
+  $("designList").addEventListener("click", function(e){
+    var b = e.target.closest("[data-use]"); if(!b) return;
+    useDesign(b.getAttribute("data-use"));
+    $("build").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
   });
   $("swatches").innerHTML = COLOURS.map(function(c){
     return '<label class="sw'+(c[0]==="Clear"?" clear":"")+'" title="'+c[0]+'"><input type="checkbox" value="'+c[0]+'" aria-label="'+c[0]+'"><span style="--c:'+c[1]+'"></span></label>';
@@ -1228,7 +1356,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
   $("qtyPlus").addEventListener("click", function(){ state.qty = Math.min(20,state.qty+1); renderBuilder(); saveDraft(); });
   $("customNote").addEventListener("input", function(){ state.customNote = this.value; saveDraft(); });
   $("addBtn").addEventListener("click", function(){
-    cart.push({size:state.size, print:state.print, colours:state.palette.length, palette:state.palette.slice(), sparkle:state.sparkle, led:state.led, custom:state.custom, customNote:state.custom?state.customNote.trim():"", qty:state.qty});
+    cart.push({size:state.size, print:state.print, theme:state.print?"":(findDesign(state.theme)?state.theme:""), colours:state.palette.length, palette:state.palette.slice(), sparkle:state.sparkle, led:state.led, custom:state.custom, customNote:state.custom?state.customNote.trim():"", qty:state.qty});
     state.qty = 1; saveDraft(); renderBuilder(); renderCart();
     var n = cart.reduce(function(a,x){return a+(x.qty||1)},0);
     $("added").hidden = false;
@@ -1239,7 +1367,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     cart.splice(+b.getAttribute("data-rm"),1); saveDraft(); renderCart();
   });
 
-  ["print","sparkle","led","custom"].forEach(function(k){ $(k).checked = !!state[k]; });
+  ["sparkle","led","custom"].forEach(function(k){ $(k).checked = !!state[k]; });
   $("customNote").value = state.customNote||"";
   renderAll();
 
@@ -1483,6 +1611,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     renderAccount();
     $("settingsSec").hidden = !canEdit;
     $("pricesSec").hidden = !canEdit;
+    $("designsSec").hidden = !canEdit;
     $("upForm").hidden = !canEdit;
     renderGallery(); renderStart();
   }
@@ -1788,7 +1917,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       if(["New","Confirmed","Making"].indexOf(o.status)<0) return;
       itemsOf(o).forEach(function(it){ var n=it.qty||1; c[it.size]=(c[it.size]||0)+n; if(it.print) c.print+=n; if(it.sparkle) c.sparkle+=n; if(it.led) c.led+=n; if(it.custom) c.custom+=n; });
     });
-    $("makegrid").innerHTML = [["S","Small"],["M","Medium"],["L","Large"],["XL","XL"],["print","Printed designs"],["sparkle","With sparkle"],["led","LEDs"],["custom","Custom inclusions"]].map(function(x){
+    $("makegrid").innerHTML = [["S","Small"],["M","Medium"],["L","Large"],["XL","XL"],["print","Own designs"],["sparkle","With sparkle"],["led","LEDs"],["custom","Custom inclusions"]].map(function(x){
       return '<div><b>'+c[x[0]]+'</b><span>'+x[1]+'</span></div>';
     }).join("");
   }
@@ -2015,6 +2144,60 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     }).catch(function(err){ showMsg("setMsg","err","Didn't save ("+errText(err)+"). Only editors can change payment details."); });
   });
 
+  // ---- designs editor ----
+  var draftDesigns = [];
+  function fillDesigns(){ draftDesigns = JSON.parse(JSON.stringify(designs)); drawDesignRows(); }
+  function drawDesignRows(){
+    $("designRows").innerHTML = draftDesigns.length ? draftDesigns.map(function(d,i){
+      return '<div class="drow" data-i="'+i+'">'+
+        '<div class="field" style="margin:0"><label for="dn'+i+'">Name</label><input type="text" id="dn'+i+'" data-f="name" maxlength="30" value="'+esc(d.name)+'"></div>'+
+        '<div class="field" style="margin:0"><label for="db'+i+'">Description</label><input type="text" id="db'+i+'" data-f="blurb" maxlength="160" value="'+esc(d.blurb)+'">'+
+          '<span class="swatches" role="group" aria-label="Colours for '+esc(d.name||"this design")+'">'+COLOURS.map(function(c){
+            return '<label class="sw'+(c[0]==="Clear"?" clear":"")+'" title="'+c[0]+'"><input type="checkbox" data-c="'+c[0]+'" aria-label="'+c[0]+'"'+(d.palette.indexOf(c[0])>=0?" checked":"")+'><span style="--c:'+c[1]+'"></span></label>';
+          }).join("")+'</span></div>'+
+        '<button type="button" class="btn small ghost" data-drm="'+i+'" aria-label="Remove '+esc(d.name||"design")+'" style="margin-top:26px">Remove</button></div>';
+    }).join("") : '<div class="empty">No themed designs. Customers will only see a plain pour and their own design.</div>';
+    $("designAdd").disabled = draftDesigns.length>=8;
+  }
+  $("designRows").addEventListener("input", function(e){
+    var row = e.target.closest("[data-i]"), f = e.target.getAttribute("data-f"); if(!row || !f) return;
+    draftDesigns[+row.getAttribute("data-i")][f] = e.target.value;
+  });
+  $("designRows").addEventListener("change", function(e){
+    var row = e.target.closest("[data-i]"), c = e.target.getAttribute("data-c"); if(!row || !c) return;
+    var pal = draftDesigns[+row.getAttribute("data-i")].palette, k = pal.indexOf(c);
+    if(e.target.checked){ if(k<0 && pal.length<6) pal.push(c); else if(k<0) e.target.checked = false; }
+    else if(k>=0) pal.splice(k,1);
+  });
+  $("designRows").addEventListener("click", function(e){
+    var b = e.target.closest("[data-drm]"); if(!b) return;
+    draftDesigns.splice(+b.getAttribute("data-drm"),1); drawDesignRows();
+  });
+  $("designAdd").addEventListener("click", function(){
+    if(draftDesigns.length>=8) return;
+    draftDesigns.push({name:"", blurb:"", palette:[]}); drawDesignRows();
+    var n = $("dn"+(draftDesigns.length-1)); if(n) n.focus();
+  });
+  $("designUndo").addEventListener("click", function(){ fillDesigns(); $("designMsg").hidden = true; });
+  $("designDefaults").addEventListener("click", function(){ draftDesigns = JSON.parse(JSON.stringify(DEFAULT_DESIGNS)); drawDesignRows(); showMsg("designMsg","ok","Starter designs filled in. Press Save designs to use them."); });
+  $("designForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var names = {}, bad = null;
+    draftDesigns.forEach(function(d,i){
+      var n = d.name.trim().toLowerCase();
+      if(!n) bad = bad || ["dn"+i, "Give every design a name, or remove it."];
+      else if(n==="own" || names[n]) bad = bad || ["dn"+i, "Each design needs a different name."];
+      names[n] = true;
+    });
+    if(bad){ showMsg("designMsg","err",bad[1]); $(bad[0]).focus(); return; }
+    var list = cleanDesigns(draftDesigns);
+    sb.from("resinate_settings").upsert({id:"designs", data:{list:list}, updated_at:new Date().toISOString()}).then(function(r){
+      if(r.error) throw r.error;
+      designs = list; fillDesigns(); renderAll();
+      showMsg("designMsg","ok","Saved. Customers see these designs the next time they open the shop.");
+    }).catch(function(err){ showMsg("designMsg","err","Didn't save ("+errText(err)+"). Only makers can change designs."); });
+  });
+
   // ---- gallery ----
   var photos = [], confirmPhoto = null;
   function photoUrl(path){ return sb ? sb.storage.from("resinate").getPublicUrl(path).data.publicUrl : ""; }
@@ -2075,8 +2258,9 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       r.data.forEach(function(row){
         if(row.id==="prices") P = mergePrices(row.data);
         if(row.id==="payment") pay = row.data || {};
+        if(row.id==="designs" && row.data) designs = cleanDesigns(row.data.list);
       });
-      renderAll(); renderPayDetails(); fillPrices(); fillSettings();
+      renderAll(); renderPayDetails(); fillPrices(); fillSettings(); fillDesigns();
     });
     loadPhotos();
     sb.auth.onAuthStateChange(function(ev, s){

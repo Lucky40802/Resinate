@@ -3,17 +3,19 @@
 The website for **Resinate**, a small handmade resin studio: epoxy and UV resin pieces, poured to order. Published with GitHub Pages at **https://lucky40802.github.io/Resinate/**.
 
 ## What's on the site
-- **Shop:** what Resinate is and how a piece is made, the four sizes (Small, Medium, Large, XL), add-on prices by size, a builder that prices a piece as you go (with a live preview and a colour picker, so makers see exactly which colours were chosen), and an order form that holds several pieces. On phones, a bar at the bottom keeps the order total and a checkout button in reach.
+- **Shop:** what Resinate is and how a piece is made, the four sizes (Small about 100 ml, Medium about 150 ml, Large about 250 ml, and XL), the themed designs (included in the price; makers edit them on the dashboard) and your-own-design option, add-on prices by size, a builder that prices a piece as you go (with a live preview and a colour picker, so makers see exactly which colours were chosen), and an order form that holds several pieces. On phones, a bar at the bottom keeps the order total and a checkout button in reach.
 - **Checkout:** customers place an order and get a reference (like `RSN-AB12C`), the amount to pay, and the PayID or bank details to pay with. Custom inclusions and XL sparkle get a confirmed price from the team first.
 - **Track order:** customers check an order with its reference and the phone, email or Instagram they ordered with.
 - **Our work:** a photo gallery the makers upload to.
 - **Accounts** (sign in with an emailed link, no password): anyone can make one.
   - **Profile:** photo (cropped to a square on the device), name, contact for orders, and every order placed while signed in, with its progress and what's left to pay.
   - **Settings:** theme (system, light or dark), a still version of the home-page animation, filling in your details at checkout, remembering orders on the device, clearing the device, signing out (here or everywhere), and deleting the account.
+- **Pre-orders:** every order is a pre-order; pieces are poured after they're ordered.
 - **Maker dashboard** (`#dashboard`), only for accounts with the `maker` role:
   - Live orders, money received and owed, charts, and a list of what to make.
   - Setting prices for custom work, recording payments (PayID, cash or card), copying messages for customers, and a spreadsheet export.
-  - Prices (including the bundle discount), payment details and gallery photos.
+  - Prices (including the bundle discount), themed designs, payment details and gallery photos.
+  - To log an order taken in person (say at the stall), build it in the shop while signed in as a maker and place it with the customer's name and contact.
 
 ## Files
 | File | What it is |

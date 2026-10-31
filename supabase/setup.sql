@@ -136,11 +136,17 @@ create or replace function private.resinate_prices() returns jsonb language sql 
 $$;
 
 -- what a list of pieces costs: the same rules as the shop page
+-- the themed designs customers can pick (names and colours); makers change them on the dashboard
+create or replace function private.resinate_designs() returns jsonb language sql stable security definer set search_path = '' as $$
+  select coalesce((select data -> 'list' from public.resinate_settings where id = 'designs' and jsonb_typeof(data -> 'list') = 'array'),
+    '[{"name": "Ocean wave", "palette": ["Ocean teal", "Sky blue", "Pearl white"]}, {"name": "Forest", "palette": ["Emerald", "Gold"]}, {"name": "Galaxy", "palette": ["Deep blue", "Purple", "Black"]}, {"name": "Sunset", "palette": ["Amber", "Rose pink", "Gold"]}, {"name": "Blossom", "palette": ["Rose pink", "Pearl white"]}, {"name": "Geode", "palette": ["Clear", "Purple", "Gold"]}]'::jsonb)
+$$;
 create or replace function private.resinate_quote(p_items jsonb, out low int, out high int, out is_open boolean)
 language plpgsql stable security definer set search_path = '' as $$
 declare
   p jsonb := private.resinate_prices();
-  it jsonb; sz text; q int; lo int; hi int; v int;
+  ds jsonb := private.resinate_designs();
+  it jsonb; sz text; q int; lo int; hi int; v int; dye_free boolean;
 begin
   low := 0; high := 0; is_open := false;
   for it in select e from jsonb_array_elements(p_items) e loop
@@ -148,7 +154,12 @@ begin
     q := (it ->> 'qty')::int;
     lo := (p -> 'base' ->> sz)::int; hi := lo;
     if (it ->> 'print')::boolean then v := (p -> 'print' ->> sz)::int; lo := lo + v; hi := hi + v; end if;
-    if (it ->> 'colours')::int >= 2 then v := (p ->> 'dye')::int; lo := lo + v; hi := hi + v; end if;
+    -- a themed design's own colours are included; other colours bring back the dye charge
+    dye_free := not coalesce((it ->> 'print')::boolean, false) and coalesce(it ->> 'theme', '') <> '' and exists (
+      select 1 from jsonb_array_elements(ds) d
+      where d ->> 'name' = it ->> 'theme'
+        and not exists (select 1 from jsonb_array_elements_text(coalesce(it -> 'palette', '[]'::jsonb)) c where not ((d -> 'palette') ? c)));
+    if (it ->> 'colours')::int >= 2 and not dye_free then v := (p ->> 'dye')::int; lo := lo + v; hi := hi + v; end if;
     if (it ->> 'sparkle')::boolean then
       if sz = 'XL' then
         if jsonb_typeof(p -> 'sparkleXL') = 'number' and (p ->> 'sparkleXL')::int > 0 then
@@ -216,12 +227,14 @@ begin
     raise exception 'An order needs between 1 and 20 lines' using errcode = '22023';
   end if;
   -- palette: the colour names picked in the builder (up to 6); the dye charge counts at least that many colours
+  -- theme: the name of one of our themed designs (included in the price), or empty
   select jsonb_agg(jsonb_build_object(
       'size', e ->> 'size',
       'qty', coalesce((e ->> 'qty')::int, 1),
       'print', coalesce((e ->> 'print')::boolean, false),
       'colours', least(greatest(coalesce((e ->> 'colours')::int, 1), jsonb_array_length(pal.p), 1), 6),
       'palette', pal.p,
+      'theme', left(coalesce(e ->> 'theme', ''), 30),
       'sparkle', coalesce((e ->> 'sparkle')::boolean, false),
       'led', coalesce((e ->> 'led')::boolean, false) and (e ->> 'size') in ('L', 'XL'),
       'custom', coalesce((e ->> 'custom')::boolean, false),
