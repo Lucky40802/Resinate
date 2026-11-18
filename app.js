@@ -1106,6 +1106,9 @@
             '<select id="pm-'+id+'" aria-label="Payment method">'+METHODS.map(function(m){return '<option>'+m+'</option>'}).join("")+'</select>'+
             '<button class="btn small" data-pay="'+id+'">Record payment</button>' : '')+
           '<button class="btn small ghost" data-msg="'+id+'">Copy message to customer</button>'+
+          (o.price!=null && owe>0 && o.status!=="Cancelled" && o.status!=="Collected" && (/^\S+@\S+\.\S+$/.test(String(o.contact||"").trim()) || o.customer_id)
+            ? '<button class="btn small ghost" data-remind="'+id+'">Email payment reminder</button>' : '')+
+          (o.reminders_sent ? '<span class="spec">Reminded '+o.reminders_sent+'×'+(o.last_reminded_at?', last '+esc(new Date(o.last_reminded_at).toLocaleDateString(undefined,{day:"numeric",month:"short"})):'')+'</span>' : '')+
           (confirmDel===o.id
             ? '<span class="spec">Delete this order for good?</span><button class="btn small danger" data-del="'+id+'">Delete</button><button class="btn small ghost" data-cancel="1">Keep</button>'
             : '<button class="btn small ghost" data-ask="'+id+'">Delete</button>')+
@@ -1140,6 +1143,10 @@
       var pays = (o.payments||[]).slice(); pays.push({amount:amt, method:$("pm-"+id).value, at:Date.now()});
       t.disabled = true;
       patchOrder(id, {payments:pays}, money(amt)+" recorded", "Payment");
+    } else if((id = t.getAttribute("data-remind"))){
+      t.disabled = true;
+      patchOrder(id, {remind_requested_at:new Date().toISOString()}, "Payment reminder on its way to the customer", "Reminder")
+        .then(function(){ setTimeout(loadOrders, 6000); });
     } else if((id = t.getAttribute("data-msg"))){
       copyText(messageFor(byId(id)), t, null);
     } else if((id = t.getAttribute("data-ask"))){ confirmDel = id; renderOrders(); }
@@ -1268,6 +1275,20 @@
       P = mergePrices(out); renderAll(); if(orders.length) renderDash();
       showMsg("priceMsg","ok","Saved. Visitors see these prices the next time they open the shop.");
     }).catch(function(err){ showMsg("priceMsg","err","Didn't save ("+errText(err)+"). Only editors can change prices."); });
+  });
+
+  // ---- payment reminder emails (sent by the payment-reminders Edge Function) ----
+  var REM_DEFAULTS = {auto:true, afterDays:2, everyDays:3, max:3}, rem = Object.assign({}, REM_DEFAULTS);
+  function fillReminders(){ $("rAuto").checked = !!rem.auto; $("rAfter").value = rem.afterDays; $("rEvery").value = rem.everyDays; $("rMax").value = rem.max; }
+  $("remForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var n = function(id, lo, hi){ var v = parseInt($(id).value,10); return v>=lo && v<=hi ? v : null; };
+    var data = {auto:$("rAuto").checked, afterDays:n("rAfter",0,60), everyDays:n("rEvery",1,60), max:n("rMax",0,10)};
+    if(data.afterDays==null || data.everyDays==null || data.max==null){ showMsg("remMsg","err","Use whole numbers: first reminder 0–60 days, repeat every 1–60 days, at most 0–10 reminders."); return; }
+    sb.from("resinate_settings").upsert({id:"reminders", data:data, updated_at:new Date().toISOString()}).then(function(r){
+      if(r.error) throw r.error;
+      rem = data; showMsg("remMsg","ok", data.auto ? "Saved. Reminders go out each morning when they're due." : "Saved. Automatic reminders are off; you can still send one from an order.");
+    }).catch(function(err){ showMsg("remMsg","err","Didn't save ("+errText(err)+")."); });
   });
 
   // ---- payment settings form ----
@@ -1411,9 +1432,10 @@
       r.data.forEach(function(row){
         if(row.id==="prices") P = mergePrices(row.data);
         if(row.id==="payment") pay = row.data || {};
+        if(row.id==="reminders") rem = Object.assign({}, REM_DEFAULTS, row.data || {});
         if(row.id==="designs" && row.data) designs = cleanDesigns(row.data.list);
       });
-      renderAll(); renderPayDetails(); fillPrices(); fillSettings(); fillDesigns();
+      renderAll(); renderPayDetails(); fillPrices(); fillSettings(); fillReminders(); fillDesigns();
     });
     loadPhotos();
     sb.auth.onAuthStateChange(function(ev, s){

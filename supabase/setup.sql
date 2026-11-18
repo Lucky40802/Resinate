@@ -382,6 +382,30 @@ drop trigger if exists resinate_message_ping on public.resinate_messages;
 create trigger resinate_message_ping after insert on public.resinate_messages
   for each statement execute function private.resinate_message_ping();
 
+-- payment reminders: the payment-reminders Edge Function emails customers who still owe money.
+-- It runs every morning (pg_cron), and straight away when a maker presses "Email payment reminder",
+-- which sets remind_requested_at. Settings (resinate_settings 'reminders'): auto, afterDays, everyDays, max.
+create extension if not exists pg_cron;
+alter table public.resinate_orders add column if not exists reminders_sent int not null default 0;
+alter table public.resinate_orders add column if not exists last_reminded_at timestamptz;
+alter table public.resinate_orders add column if not exists remind_requested_at timestamptz;
+create or replace function private.resinate_reminder_ping() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform net.http_post(url := 'https://sazvjlufjofbnrsmtlhp.supabase.co/functions/v1/payment-reminders',
+                        body := '{}'::jsonb, timeout_milliseconds := 8000);
+  return null;
+exception when others then
+  return null;
+end $$;
+drop trigger if exists resinate_reminder_ping on public.resinate_orders;
+create trigger resinate_reminder_ping after update of remind_requested_at on public.resinate_orders
+  for each row when (new.remind_requested_at is not null) execute function private.resinate_reminder_ping();
+-- every day at 23:00 UTC (10am in Sydney during daylight saving, 9am otherwise)
+select cron.unschedule(jobid) from cron.job where jobname = 'resinate-payment-reminders';
+select cron.schedule('resinate-payment-reminders', '0 23 * * *',
+  $$select net.http_post(url := 'https://sazvjlufjofbnrsmtlhp.supabase.co/functions/v1/payment-reminders', body := '{}'::jsonb, timeout_milliseconds := 30000)$$);
+
 -- live updates: the dashboard hears new and changed orders (row-level security still decides who sees them)
 do $$
 begin

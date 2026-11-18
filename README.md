@@ -46,6 +46,9 @@ Each message sent from the site's "Message us" form is also emailed to resinated
 3. In Supabase, **Edge Functions → Secrets → Add new secret**: name `RESEND_API_KEY`, value the key. Save.
 Replies to the email go straight to the customer when they left an email address.
 
+### Payment reminder emails
+The `payment-reminders` Edge Function (`supabase/functions/payment-reminders`) emails customers who still owe money on an order with a set price, from resinatedesigns.bhhs@gmail.com, with the payment details and their order reference. It runs every morning (pg_cron, 23:00 UTC) and straight away when a maker presses **Email payment reminder** on an order. Timing (first after N days, then every N days, at most N) is set on the dashboard. To switch it on, create a Gmail App Password for the project account (Google Account → Security → 2-Step Verification on → App passwords) and add it in Supabase as the Edge Function secret `GMAIL_APP_PASSWORD`.
+
 Supabase's built-in email sender only sends a few emails an hour. For a whole team, add your own sender under Authentication → SMTP Settings.
 
 ## How the data is protected

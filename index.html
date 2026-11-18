@@ -942,6 +942,18 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
             <div id="setMsg" hidden></div>
             <div class="row"><button class="btn" type="submit">Save payment details</button></div>
           </form>
+          <form class="panel" id="remForm" novalidate style="margin-top:14px">
+            <div class="row" style="justify-content:space-between"><b>Payment reminder emails</b>
+              <label class="switch"><input type="checkbox" id="rAuto"><i></i><span class="vh">Send reminders automatically</span></label></div>
+            <p class="hint muted" style="margin:0">When on, customers with a set price who still owe money get an email from resinatedesigns.bhhs@gmail.com each morning it's due, with your payment details and their order reference. Only orders with an email address (or placed from an account) can be emailed.</p>
+            <div class="settings">
+              <div class="field"><label for="rAfter">First reminder after (days)</label><input type="text" inputmode="numeric" id="rAfter"></div>
+              <div class="field"><label for="rEvery">Then every (days)</label><input type="text" inputmode="numeric" id="rEvery"></div>
+              <div class="field"><label for="rMax">At most (reminders per order)</label><input type="text" inputmode="numeric" id="rMax"></div>
+            </div>
+            <div id="remMsg" hidden></div>
+            <div class="row"><button class="btn" type="submit">Save reminder settings</button></div>
+          </form>
         </div>
 
         <div class="dsec">
