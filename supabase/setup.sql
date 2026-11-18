@@ -245,7 +245,7 @@ begin
       'artText', left(coalesce(e ->> 'artText', ''), 40),
       'artNote', left(coalesce(e ->> 'artNote', ''), 300),
       'sparkle', coalesce((e ->> 'sparkle')::boolean, false),
-      'led', coalesce((e ->> 'led')::boolean, false) and (e ->> 'size') in ('L', 'XL'),
+      'led', false,  -- LED bases are no longer offered
       'custom', coalesce((e ->> 'custom')::boolean, false),
       'customNote', left(coalesce(e ->> 'customNote', ''), 300)))
     into res

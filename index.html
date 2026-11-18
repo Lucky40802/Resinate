@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://sazvjlufjofbnrsmtlhp.supabase.co; connect-src 'self' https://sazvjlufjofbnrsmtlhp.supabase.co wss://sazvjlufjofbnrsmtlhp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <script src="theme.js"></script>
-<meta name="description" content="Resinate makes handmade epoxy and UV resin pieces, poured to order. Choose a size, add your own design, colours, sparkle or an LED light, and order online or at our market stall.">
+<meta name="description" content="Resinate makes handmade epoxy and UV resin pieces, poured to order. Choose a size, add your own design, colours or sparkle, and order online or at our market stall.">
 <meta property="og:title" content="Resinate">
 <meta property="og:description" content="Handmade resin pieces, poured to order. Build yours and order online.">
 <meta property="og:type" content="website">
@@ -478,7 +478,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     <div>
       <p class="eyebrow">Handmade epoxy &amp; UV resin</p>
       <h1>Poured by hand, <em>made to order.</em></h1>
-      <p class="lede">Pick a size and one of our designs, or upload your own. Add colours, sparkle or a built-in LED, see it on the preview, then pre-order online or at our market stall.</p>
+      <p class="lede">Pick a size and one of our designs, or upload your own. Add colours or sparkle, see it on the preview, then pre-order online or at our market stall.</p>
       <div class="cta">
         <a class="btn" href="#build">Build your piece</a>
         <a class="btn ghost" href="#pricing">See prices</a>
@@ -508,7 +508,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           <p>Nothing sits on a shelf waiting for you. Every piece is poured after you order it, so you choose the size, the colours and the finish. Want your own picture or a 3D design set inside? A wave with real sand at the bottom, or leaves from somewhere that matters to you? That's what we do.</p>
           <p>Because resin moves while it sets, no two pieces ever come out the same. The swirls, bubbles and shimmer in yours won't exist anywhere else.</p>
           <div class="uses" aria-label="Good for">
-            <span>Gifts</span><span>Keepsakes</span><span>Desk and shelf decor</span><span>Night lights (with LED)</span><span>Jewellery</span><span>Something for yourself</span>
+            <span>Gifts</span><span>Keepsakes</span><span>Desk and shelf decor</span><span>Jewellery</span><span>Something for yourself</span>
           </div>
         </div>
       </div>
@@ -516,7 +516,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       <div class="why">
         <div><b>Made for you</b><span>Poured after you order, in the colours and design you pick. Not mass-produced, not pulled from a box.</span></div>
         <div><b>One of a kind</b><span>Resin flows and settles differently every pour, so every swirl and sparkle is unique to your piece.</span></div>
-        <div><b>Lights up</b><span>Large and XL pieces can sit on an LED base that glows through the resin. It makes a great night light.</span></div>
+        <div><b>Gives back</b><span>All of the profit from every piece goes to charity.</span></div>
         <div><b>Clear prices</b><span>Pieces start at <span class="num" id="fromPrice2">$5.99</span>, and every add-on has a set price you can see before you order.</span></div>
       </div>
 
@@ -525,7 +525,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
         <div><b>Mix &amp; tint</b><span>We mix the resin and colour it with dyes, mica and glitter.</span></div>
         <div><b>Pour &amp; layer</b><span>Poured into the mould, with your print or inclusions set inside.</span></div>
         <div><b>Cure</b><span>Left to harden into solid, crystal-clear resin.</span></div>
-        <div><b>Finish</b><span>Demoulded, polished, LED fitted, and ready for you to collect.</span></div>
+        <div><b>Finish</b><span>Demoulded, polished and ready for you to collect.</span></div>
       </div>
     </div>
   </section>
@@ -542,7 +542,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
         <span style="font-weight:600">Add a photo (editors)</span>
         <div class="row">
           <input type="file" id="upFile" accept="image/*" aria-label="Photo file">
-          <input type="text" id="upCaption" placeholder="Caption, e.g. Large ocean pour with LED" style="flex:1 1 220px" aria-label="Caption">
+          <input type="text" id="upCaption" placeholder="Caption, e.g. Large ocean pour" style="flex:1 1 220px" aria-label="Caption">
           <button class="btn small" type="submit" id="upBtn">Upload</button>
         </div>
         <div id="upMsg" hidden></div>
@@ -630,7 +630,6 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
               <span class="c" id="cDye"></span>
             </div>
             <label class="opt"><input type="checkbox" id="sparkle"><span><span class="t">Sparkle</span><br><span class="d" id="dSparkle">Glitter, mica or flakes</span></span><span class="c" id="cSparkle"></span></label>
-            <label class="opt" id="optLed"><input type="checkbox" id="led"><span><span class="t">LED light</span><br><span class="d" id="dLed">Large and XL only</span></span><span class="c" id="cLed"></span></label>
             <label class="opt"><input type="checkbox" id="custom"><span><span class="t">Custom inclusion</span><br><span class="d">Crystals, scenery, sand, leaves, or your own idea</span></span><span class="c" id="cCustom"></span></label>
             <div class="field" id="customBox" hidden>
               <label for="customNote">Describe your idea</label>
@@ -900,8 +899,6 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
               <div class="field"><label for="pSpLo">Sparkle from $</label><input type="text" inputmode="decimal" id="pSpLo"></div>
               <div class="field"><label for="pSpHi">Sparkle up to $</label><input type="text" inputmode="decimal" id="pSpHi"></div>
               <div class="field"><label for="pSpXL">XL sparkle $</label><input type="text" inputmode="decimal" id="pSpXL" placeholder="blank = ask us"></div>
-              <div class="field"><label for="pLedL">LED, Large $</label><input type="text" inputmode="decimal" id="pLedL"></div>
-              <div class="field"><label for="pLedXL">LED, XL $</label><input type="text" inputmode="decimal" id="pLedXL"></div>
               <div class="field"><label for="pCustom">Custom inclusion from $</label><input type="text" inputmode="decimal" id="pCustom"></div>
               <div class="field"><label for="pBundle">Bundle discount $</label><input type="text" inputmode="decimal" id="pBundle" placeholder="0 = coming soon"></div>
             </div>
@@ -961,7 +958,6 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
           <div class="notes">
             <div><b>Custom inclusions</b>Crystals, scenery and custom requests are up to the sales agent. Call Sap for pricing and details. Range starts at $2.</div>
             <div><b>XL sparkle</b>Not on the price list. Quote it case by case, or set a price above.</div>
-            <div><b>LED stand</b>Once the first stand is built and costed, set its price under LED, Large and LED, XL above.</div>
             <div><b>Bundle pricing</b>Print + dye + sparkle bundle will be cheaper than separate add-ons. Set the discount in Prices once it's decided.</div>
           </div>
         </div>
@@ -1057,7 +1053,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
       <div class="policy">
         <section class="charity" id="charity">
           <h3>All profit goes to charity</h3>
-          <p>After we cover the cost of materials (resin, pigments, moulds, LEDs and packaging), <b>all of the profit from every sale goes to charity</b>.</p>
+          <p>After we cover the cost of materials (resin, pigments, moulds and packaging), <b>all of the profit from every sale goes to charity</b>.</p>
           <p>Ask us at the stall or through our contact details if you'd like to know which charity your order is supporting.</p>
         </section>
         <section id="refunds">

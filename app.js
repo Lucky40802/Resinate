@@ -29,7 +29,7 @@
   function toast(text){ var t=$("toast"); t.textContent=text; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(function(){ t.hidden=true; },2600); }
   function errText(e){ return (e && (e.message || e.error_description || e.code)) || "unknown error"; }
   function sparkleRange(k){ return k==="XL" ? (P.sparkleXL ? [P.sparkleXL,P.sparkleXL] : null) : [P.sparkleLo,P.sparkleHi]; }
-  function ledPrice(k){ return (k==="L"||k==="XL") ? (P.led[k]||null) : null; }
+  function ledPrice(){ return null; } // LED bases are no longer offered
   function mergePrices(d){
     var out = JSON.parse(JSON.stringify(DEFAULT_PRICES));
     if(!d) return out;
@@ -99,7 +99,6 @@
       '<tr><td><b>Your own design</b><span class="sub">Your own picture, words or a custom 3D design set into the resin.</span></td>'+cells(function(k){return '<td class="p">'+money(P.print[k])+'</td>'})+'</tr>'+
       '<tr><td><b>Colour dye</b><span class="sub">Charged when you pick 2 or more colours. One colour is included.</span></td>'+cells(function(){return '<td class="p">'+money(P.dye)+'</td>'})+'</tr>'+
       '<tr><td><b>Sparkle</b><span class="sub">Glitter, mica or flakes. Price depends on how much you want.</span></td>'+cells(function(k){var r=sparkleRange(k); return r?'<td class="p">'+range(r[0],r[1])+'</td>':'<td class="p ask">Ask us</td>'})+'</tr>'+
-      '<tr><td><b>LED light</b><span class="sub">Light-up base for larger pieces</span></td>'+cells(function(k){var l=ledPrice(k); return l?'<td class="p">'+money(l)+'</td>':'<td class="p na">Not available</td>'})+'</tr>'+
       '<tr><td><b>Custom inclusions</b><span class="sub">Crystals, scenery, or a theme like sand for a wave or leaves for a nature piece. We quote each one.</span></td>'+cells(function(){return '<td class="p">from '+short(P.customMin)+'</td>'})+'</tr>';
     $("bundleBox").innerHTML = P.bundleOff>0
       ? '<span class="pill ok">Bundle deal</span><div style="min-width:0;flex:1 1 260px"><strong>Save '+money(P.bundleOff)+' on the full modification bundle</strong><p>Add your own design, 2 or more colours and sparkle to one piece and the discount comes off automatically.</p></div>'
@@ -242,12 +241,7 @@
     var sp = sparkleRange(st.size);
     $("cSparkle").textContent = sp ? range(sp[0],sp[1]) : "Ask us";
     $("dSparkle").textContent = sp ? "Glitter, mica or flakes" : "Glitter, mica or flakes. XL sparkle is quoted by us.";
-    var l = ledPrice(st.size);
-    $("led").disabled = !l;
-    if(!l){ $("led").checked = false; st.led = false; }
-    $("optLed").classList.toggle("off", !l);
-    $("cLed").textContent = l ? money(l) : "—";
-    $("dLed").textContent = l ? "Light-up base" : "Available on Large and XL";
+    st.led = false;
     $("customBox").hidden = !st.custom;
     $("qty").textContent = st.qty;
     $("qtyMinus").disabled = st.qty<=1;
@@ -378,7 +372,7 @@
 
   $("builder").addEventListener("submit", function(e){ e.preventDefault(); });
   $("sizeSeg").addEventListener("change", function(e){ state.size = e.target.value; renderBuilder(); saveDraft(); });
-  ["sparkle","led","custom"].forEach(function(k){
+  ["sparkle","custom"].forEach(function(k){
     $(k).addEventListener("change", function(){ state[k] = this.checked; renderBuilder(); saveDraft(); });
   });
   $("designPick").addEventListener("change", function(e){ if(e.target.name==="design") useDesign(e.target.value); });
@@ -403,7 +397,7 @@
   $("customNote").addEventListener("input", function(){ state.customNote = this.value; saveDraft(); });
   $("addBtn").addEventListener("click", function(){
     cart.push({size:state.size, print:state.print, theme:state.print?"":(findDesign(state.theme)?state.theme:""),
-      art:state.print && ART_RE.test(state.art||"") ? state.art : "", artText:state.print?(state.artText||"").trim():"", artNote:state.print?(state.artNote||"").trim():"", colours:state.palette.length, palette:state.palette.slice(), sparkle:state.sparkle, led:state.led, custom:state.custom, customNote:state.custom?state.customNote.trim():"", qty:state.qty});
+      art:state.print && ART_RE.test(state.art||"") ? state.art : "", artText:state.print?(state.artText||"").trim():"", artNote:state.print?(state.artNote||"").trim():"", colours:state.palette.length, palette:state.palette.slice(), sparkle:state.sparkle, led:false, custom:state.custom, customNote:state.custom?state.customNote.trim():"", qty:state.qty});
     state.qty = 1; saveDraft(); renderBuilder(); renderCart();
     var n = cart.reduce(function(a,x){return a+(x.qty||1)},0);
     $("added").hidden = false;
@@ -416,7 +410,7 @@
     cart.splice(+b.getAttribute("data-rm"),1); saveDraft(); renderCart();
   });
 
-  ["sparkle","led","custom"].forEach(function(k){ $(k).checked = !!state[k]; });
+  ["sparkle","custom"].forEach(function(k){ $(k).checked = !!state[k]; });
   $("customNote").value = state.customNote||"";
   renderAll();
 
@@ -1053,7 +1047,7 @@
       if(["New","Confirmed","Making"].indexOf(o.status)<0) return;
       itemsOf(o).forEach(function(it){ var n=it.qty||1; c[it.size]=(c[it.size]||0)+n; if(it.print) c.print+=n; if(it.sparkle) c.sparkle+=n; if(it.led) c.led+=n; if(it.custom) c.custom+=n; });
     });
-    $("makegrid").innerHTML = [["S","Small"],["M","Medium"],["L","Large"],["XL","XL"],["print","Own designs"],["sparkle","With sparkle"],["led","LEDs"],["custom","Custom inclusions"]].map(function(x){
+    $("makegrid").innerHTML = [["S","Small"],["M","Medium"],["L","Large"],["XL","XL"],["print","Own designs"],["sparkle","With sparkle"],["custom","Custom inclusions"]].map(function(x){
       return '<div><b>'+c[x[0]]+'</b><span>'+x[1]+'</span></div>';
     }).join("");
   }
@@ -1254,7 +1248,7 @@
     ["ppS",["print","S"]],["ppM",["print","M"]],["ppL",["print","L"]],["ppXL",["print","XL"]],
     ["ptS",["theme","S"]],["ptM",["theme","M"]],["ptL",["theme","L"]],["ptXL",["theme","XL"]],
     ["pDye",["dye"]],["pSpLo",["sparkleLo"]],["pSpHi",["sparkleHi"]],["pSpXL",["sparkleXL"]],
-    ["pLedL",["led","L"]],["pLedXL",["led","XL"]],["pCustom",["customMin"]],["pBundle",["bundleOff"]]];
+    ["pCustom",["customMin"]],["pBundle",["bundleOff"]]];
   function getPath(o,p){ return p.length===1 ? o[p[0]] : o[p[0]][p[1]]; }
   function fillPrices(){ PRICE_FIELDS.forEach(function(f){ var v=getPath(P,f[1]); $(f[0]).value = v==null ? "" : (v/100).toFixed(2); }); }
   $("priceReset").addEventListener("click", function(){ fillPrices(); $("priceMsg").hidden = true; });
