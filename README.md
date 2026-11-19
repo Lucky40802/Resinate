@@ -11,6 +11,7 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
 - **Accounts** (sign in with an emailed link, no password): anyone can make one.
   - **Profile:** photo (cropped to a square on the device), name, contact for orders, and every order placed while signed in, with its progress and what's left to pay.
   - **Settings:** theme (system, light or dark), a still version of the home-page animation, filling in your details at checkout, remembering orders on the device, clearing the device, signing out (here or everywhere), and deleting the account.
+- **Resin earrings:** premade pairs and make-your-own pairs, sold at the market stall (prices set on the dashboard).
 - **Pre-orders:** every order is a pre-order; pieces are poured after they're ordered.
 - **Privacy & regulations** (`#policies`): all profit goes to charity, refunds within 7 days of buying (on top of Australian Consumer Law rights), and the privacy policy.
 - **Maker dashboard** (`#dashboard`), only for accounts with the `maker` role:

@@ -13,7 +13,8 @@
     print:{S:199,M:199,L:299,XL:299},
     theme:{S:99,M:99,L:199,XL:199},
     dye:99, sparkleLo:100, sparkleHi:149, sparkleXL:null,
-    led:{L:449,XL:399}, customMin:200, bundleOff:0
+    led:{L:449,XL:399}, customMin:200, bundleOff:0,
+    earPremade:200, earDiy:350
   };
   var P = JSON.parse(JSON.stringify(DEFAULT_PRICES));
   var STATUSES = ["New","Confirmed","Making","Ready","Collected","Cancelled"];
@@ -34,7 +35,7 @@
     var out = JSON.parse(JSON.stringify(DEFAULT_PRICES));
     if(!d) return out;
     ["base","print","theme","led"].forEach(function(g){ if(d[g]) for(var k in out[g]) if(typeof d[g][k]==="number") out[g][k]=d[g][k]; });
-    ["dye","sparkleLo","sparkleHi","customMin","bundleOff"].forEach(function(k){ if(typeof d[k]==="number") out[k]=d[k]; });
+    ["dye","sparkleLo","sparkleHi","customMin","bundleOff","earPremade","earDiy"].forEach(function(k){ if(typeof d[k]==="number") out[k]=d[k]; });
     out.sparkleXL = typeof d.sparkleXL==="number" ? d.sparkleXL : null;
     return out;
   }
@@ -83,6 +84,7 @@
 
   // ---- shop price displays ----
   function renderPriceDisplays(){
+    $("epPremade").textContent = short(P.earPremade); $("epDiy").textContent = short(P.earDiy);
     $("fromPrice").textContent = $("fromPrice2").textContent = money(Math.min(P.base.S,P.base.M,P.base.L,P.base.XL));
     $("sizes").innerHTML = SIZES.map(function(s){
       var w = 26 + s.h*0.9;
@@ -367,7 +369,7 @@
     var spyIO = new IntersectionObserver(function(es){
       es.forEach(function(e){ if(e.isIntersecting){ for(var k in spy) spy[k].classList.toggle("on", k===e.target.id); } });
     }, {rootMargin:"-45% 0px -50% 0px"});
-    ["about","pricing","designs-sec","build","checkout","track","contact"].forEach(function(id){ if($(id)) spyIO.observe($(id)); });
+    ["about","earrings","pricing","designs-sec","build","checkout","track","contact"].forEach(function(id){ if($(id)) spyIO.observe($(id)); });
   }
 
   $("builder").addEventListener("submit", function(e){ e.preventDefault(); });
@@ -1248,7 +1250,7 @@
     ["ppS",["print","S"]],["ppM",["print","M"]],["ppL",["print","L"]],["ppXL",["print","XL"]],
     ["ptS",["theme","S"]],["ptM",["theme","M"]],["ptL",["theme","L"]],["ptXL",["theme","XL"]],
     ["pDye",["dye"]],["pSpLo",["sparkleLo"]],["pSpHi",["sparkleHi"]],["pSpXL",["sparkleXL"]],
-    ["pCustom",["customMin"]],["pBundle",["bundleOff"]]];
+    ["pEarPre",["earPremade"]],["pEarDiy",["earDiy"]],["pCustom",["customMin"]],["pBundle",["bundleOff"]]];
   function getPath(o,p){ return p.length===1 ? o[p[0]] : o[p[0]][p[1]]; }
   function fillPrices(){ PRICE_FIELDS.forEach(function(f){ var v=getPath(P,f[1]); $(f[0]).value = v==null ? "" : (v/100).toFixed(2); }); }
   $("priceReset").addEventListener("click", function(){ fillPrices(); $("priceMsg").hidden = true; });

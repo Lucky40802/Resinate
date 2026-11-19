@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://sazvjlufjofbnrsmtlhp.supabase.co; connect-src 'self' https://sazvjlufjofbnrsmtlhp.supabase.co wss://sazvjlufjofbnrsmtlhp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <script src="theme.js"></script>
-<meta name="description" content="Resinate makes handmade epoxy and UV resin pieces, poured to order. Choose a size, add your own design, colours or sparkle, and order online or at our market stall.">
+<meta name="description" content="Resinate makes handmade epoxy and UV resin pieces, poured to order. Choose a size, add your own design, colours or sparkle, or pick up resin earrings at our stall, and order online or at our market stall.">
 <meta property="og:title" content="Resinate">
 <meta property="og:description" content="Handmade resin pieces, poured to order. Build yours and order online.">
 <meta property="og:type" content="website">
@@ -352,6 +352,18 @@ footer{border-top:1px solid var(--line);padding-block:28px;color:var(--muted);fo
 .preview svg{width:100%;max-width:260px;height:auto;display:block}
 .preview figcaption{font-size:.8rem;opacity:.7;text-align:center;margin-top:2px}
 /* themed designs */
+.earrings{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.earring{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;color:var(--ink)}
+.earring.diy{background:var(--resin);border-color:var(--resin);color:var(--resin-ink)}
+.earring .eart{width:64px;height:77px}
+.earring h3{font-size:1.5rem}
+.earring p{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.earring.diy p{color:inherit;opacity:.85}
+.eprice{display:grid;justify-items:center;width:92px;height:92px;place-content:center;border-radius:50%;background:var(--sunk);color:var(--ink)}
+.earring.diy .eprice{background:var(--amber);color:#1c1204;transform:rotate(-8deg)}
+.eprice span{font-family:var(--display);font-size:1.9rem;line-height:1}
+.eprice small{font-size:.72rem;opacity:.75}
+@media (max-width:420px){.earring{grid-template-columns:auto 1fr}.eprice{grid-column:1/-1;justify-self:start;width:auto;height:auto;padding:6px 14px;border-radius:999px;display:flex;gap:6px;align-items:baseline}}
 .designs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .design{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;align-content:start}
 .design .thumb{width:100%;aspect-ratio:16/10;border-radius:10px;border:1px solid var(--line)}
@@ -457,6 +469,7 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
     <a class="brand" href="#top"><span class="drop" aria-hidden="true"></span>Resinate</a>
     <nav aria-label="Sections">
       <a href="#about">About</a>
+      <a href="#earrings">Earrings</a>
       <a href="#pricing">Prices</a>
       <a href="#designs-sec">Designs</a>
       <a href="#build">Build yours</a>
@@ -547,6 +560,29 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
         </div>
         <div id="upMsg" hidden></div>
       </form>
+    </div>
+  </section>
+
+  <section id="earrings">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">At our market stall</p>
+        <h2>Resin earrings</h2>
+        <p class="lede">Light, glossy and one of a kind. Find them at the stall on market day.</p>
+      </div>
+      <div class="earrings">
+        <article class="earring">
+          <svg class="eart" viewBox="0 0 80 96" role="img" aria-label="A pair of resin drop earrings"><path d="M24 6a6 6 0 1 1 0 12" stroke="#557074" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M24 22C16 36 10 46 10 56a14 14 0 0 0 28 0c0-10-6-20-14-34z" fill="#0d8a8c"/><path d="M17 54a7 7 0 0 0 5 8" stroke="#fff" stroke-opacity=".7" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M56 6a6 6 0 1 1 0 12" stroke="#557074" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M56 22C48 36 42 46 42 56a14 14 0 0 0 28 0c0-10-6-20-14-34z" fill="#0d8a8c"/><path d="M49 54a7 7 0 0 0 5 8" stroke="#fff" stroke-opacity=".7" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="28" cy="62" r="2" fill="#e8b85c"/><circle cx="60" cy="50" r="2" fill="#e8b85c"/></svg>
+          <div class="txt"><h3>Premade resin earrings</h3><p>Ready to wear. Pick your favourite pair from the table.</p></div>
+          <div class="eprice"><span id="epPremade">$2.00</span><small>a pair</small></div>
+        </article>
+        <article class="earring diy">
+          <svg class="eart" viewBox="0 0 80 96" role="img" aria-label="An earring mould being filled with resin"><path d="M30 8h20v14l-6 8h-8l-6-8z" fill="#dbb27a"/><path d="M40 30v18" stroke="#dbb27a" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 7"/><path d="M40 54C33 66 28 74 28 81a12 12 0 0 0 24 0c0-7-5-15-12-27z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M30 81a10 10 0 0 0 20 0c0-3-1-6-3-9H33c-2 3-3 6-3 9z" fill="#7fb9b8"/><circle cx="36" cy="82" r="1.8" fill="#fff"/><circle cx="44" cy="78" r="1.8" fill="#e8b85c"/></svg>
+          <div class="txt"><h3>Make your own resin earrings</h3><p>Choose your colours and sparkle and make your own pair at the stall.</p></div>
+          <div class="eprice"><span id="epDiy">$3.50</span><small>a pair</small></div>
+        </article>
+      </div>
+      <p class="hint muted" style="margin-top:14px">Want something bigger? <a href="#build">Build a custom piece</a> and collect it after market day.</p>
     </div>
   </section>
 
@@ -899,6 +935,8 @@ html{scroll-behavior:smooth;scroll-padding-top:80px}
               <div class="field"><label for="pSpLo">Sparkle from $</label><input type="text" inputmode="decimal" id="pSpLo"></div>
               <div class="field"><label for="pSpHi">Sparkle up to $</label><input type="text" inputmode="decimal" id="pSpHi"></div>
               <div class="field"><label for="pSpXL">XL sparkle $</label><input type="text" inputmode="decimal" id="pSpXL" placeholder="blank = ask us"></div>
+              <div class="field"><label for="pEarPre">Premade earrings (pair) $</label><input type="text" inputmode="decimal" id="pEarPre"></div>
+              <div class="field"><label for="pEarDiy">Make-your-own earrings (pair) $</label><input type="text" inputmode="decimal" id="pEarDiy"></div>
               <div class="field"><label for="pCustom">Custom inclusion from $</label><input type="text" inputmode="decimal" id="pCustom"></div>
               <div class="field"><label for="pBundle">Bundle discount $</label><input type="text" inputmode="decimal" id="pBundle" placeholder="0 = coming soon"></div>
             </div>
