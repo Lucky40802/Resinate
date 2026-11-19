@@ -128,8 +128,12 @@ create or replace function private.resinate_prices() returns jsonb language sql 
   with s as (select coalesce((select data from public.resinate_settings where id = 'prices'), '{}'::jsonb) as d),
   def as (select '{"base":{"S":599,"M":999,"L":1399,"XL":1999},"print":{"S":199,"M":199,"L":299,"XL":299},
                    "theme":{"S":99,"M":99,"L":199,"XL":199},"dye":99,"sparkleLo":100,"sparkleHi":149,"sparkleXL":null,"led":{"L":449,"XL":399},
-                   "customMin":200,"bundleOff":0}'::jsonb as d)
-  select def.d || (s.d - 'base' - 'print' - 'theme' - 'led') || jsonb_build_object(
+                   "customMin":200,
+                   "bundleLo":{"S":450,"M":550,"L":650,"XL":650},"bundleHi":{"S":550,"M":660,"L":700,"XL":700},
+                   "earPremade":200,"earPrint":50,"earLate":100,"comboPct":10}'::jsonb as d)
+  select def.d || (s.d - 'base' - 'print' - 'theme' - 'led' - 'bundleLo' - 'bundleHi') || jsonb_build_object(
+    'bundleLo', (def.d -> 'bundleLo') || coalesce(s.d -> 'bundleLo', '{}'::jsonb),
+    'bundleHi', (def.d -> 'bundleHi') || coalesce(s.d -> 'bundleHi', '{}'::jsonb),
     'base',  (def.d -> 'base')  || coalesce(s.d -> 'base',  '{}'::jsonb),
     'print', (def.d -> 'print') || coalesce(s.d -> 'print', '{}'::jsonb),
     'theme', (def.d -> 'theme') || coalesce(s.d -> 'theme', '{}'::jsonb),
@@ -148,13 +152,23 @@ language plpgsql stable security definer set search_path = '' as $$
 declare
   p jsonb := private.resinate_prices();
   ds jsonb := private.resinate_designs();
-  it jsonb; sz text; q int; lo int; hi int; v int; theme_ok boolean; dye_free boolean;
+  it jsonb; sz text; q int; lo int; hi int; v int; theme_ok boolean; dye_free boolean; mods int;
+  has_piece boolean := false; has_ear boolean := false; ear_print boolean := false;
 begin
   low := 0; high := 0; is_open := false;
   for it in select e from jsonb_array_elements(p_items) e loop
     sz := it ->> 'size';
     q := (it ->> 'qty')::int;
-    lo := (p -> 'base' ->> sz)::int; hi := lo;
+    -- premade earrings, optionally with a custom print
+    if it ->> 'kind' = 'earrings' then
+      has_ear := true;
+      v := (p ->> 'earPremade')::int;
+      if coalesce((it ->> 'print')::boolean, false) then v := v + (p ->> 'earPrint')::int; ear_print := true; end if;
+      low := low + v * q; high := high + v * q;
+      continue;
+    end if;
+    has_piece := true;
+    lo := 0; hi := 0;  -- add-ons first; the base price is added at the end
     if (it ->> 'print')::boolean then v := (p -> 'print' ->> sz)::int; lo := lo + v; hi := hi + v; end if;
     -- a themed design has its own price, which includes its colours; other colours bring back the dye charge
     theme_ok := not coalesce((it ->> 'print')::boolean, false) and coalesce(it ->> 'theme', '') <> ''
@@ -178,11 +192,27 @@ begin
       v := coalesce((p -> 'led' ->> sz)::int, 0); lo := lo + v; hi := hi + v;
     end if;
     if (it ->> 'custom')::boolean then v := (p ->> 'customMin')::int; lo := lo + v; hi := hi + v; is_open := true; end if;
-    if (p ->> 'bundleOff')::int > 0 and (it ->> 'print')::boolean and (it ->> 'colours')::int >= 2 and (it ->> 'sparkle')::boolean then
-      v := (p ->> 'bundleOff')::int; lo := lo - v; hi := hi - v;
+    -- full mod bundle: with 4+ add-ons, the add-ons cost the bundle range for the size, if that's cheaper
+    mods := (case when coalesce((it ->> 'print')::boolean, false) or theme_ok then 1 else 0 end)
+          + (case when (it ->> 'colours')::int >= 2 then 1 else 0 end)
+          + (case when coalesce((it ->> 'sparkle')::boolean, false) then 1 else 0 end)
+          + (case when coalesce((it ->> 'custom')::boolean, false) then 1 else 0 end);
+    if mods >= 4 then
+      lo := least(lo, (p -> 'bundleLo' ->> sz)::int);
+      hi := least(hi, (p -> 'bundleHi' ->> sz)::int);
     end if;
+    lo := lo + (p -> 'base' ->> sz)::int; hi := hi + (p -> 'base' ->> sz)::int;
     low := low + lo * q; high := high + hi * q;
   end loop;
+  -- a resin piece and earrings in one order: comboPct% off
+  if has_piece and has_ear and (p ->> 'comboPct')::int > 0 then
+    low := low - round(low * (p ->> 'comboPct')::numeric / 100)::int;
+    high := high - round(high * (p ->> 'comboPct')::numeric / 100)::int;
+  end if;
+  -- an earring print requested after Friday (Saturday or Sunday in Sydney): a late fee, once per order
+  if ear_print and extract(isodow from now() at time zone 'Australia/Sydney') in (6, 7) then
+    low := low + (p ->> 'earLate')::int; high := high + (p ->> 'earLate')::int;
+  end if;
 end $$;
 
 -- ── orders ───────────────────────────────────────────────────────
@@ -234,7 +264,16 @@ begin
   -- palette: the colour names picked in the builder (up to 2); the dye charge counts at least that many colours
   -- theme: the name of one of our themed designs, or empty
   -- art / artText / artNote: a customer's own design (their uploaded picture's path, words, and a description)
-  select jsonb_agg(jsonb_build_object(
+  -- earrings lines (kind 'earrings'): qty, print, the uploaded print file (art), printSize and printColour
+  select jsonb_agg(case when e ->> 'kind' = 'earrings' then jsonb_build_object(
+      'kind', 'earrings',
+      'qty', coalesce((e ->> 'qty')::int, 1),
+      'print', coalesce((e ->> 'print')::boolean, false),
+      'art', case when coalesce(e ->> 'art', '') ~ '^designs/[0-9a-f-]{36}/[A-Za-z0-9_.-]{1,80}$' then e ->> 'art' else '' end,
+      'printSize', left(coalesce(e ->> 'printSize', ''), 60),
+      'printColour', case when e ->> 'printColour' = 'bw' then 'bw' else 'colour' end)
+    else jsonb_build_object(
+      'kind', 'piece',
       'size', e ->> 'size',
       'qty', coalesce((e ->> 'qty')::int, 1),
       'print', coalesce((e ->> 'print')::boolean, false),
@@ -247,7 +286,7 @@ begin
       'sparkle', coalesce((e ->> 'sparkle')::boolean, false),
       'led', false,  -- LED bases are no longer offered
       'custom', coalesce((e ->> 'custom')::boolean, false),
-      'customNote', left(coalesce(e ->> 'customNote', ''), 300)))
+      'customNote', left(coalesce(e ->> 'customNote', ''), 300)) end)
     into res
     from jsonb_array_elements(p_items) e
     cross join lateral (
@@ -256,7 +295,7 @@ begin
            with ordinality as c(v, n)
       where c.n <= 2 and length(trim(c.v)) > 0) pal;
   if exists (select 1 from jsonb_array_elements(res) e
-             where (e ->> 'size') not in ('S', 'M', 'L', 'XL') or (e ->> 'qty')::int not between 1 and 20) then
+             where (e ->> 'kind' = 'piece' and (e ->> 'size') not in ('S', 'M', 'L', 'XL')) or (e ->> 'qty')::int not between 1 and 20) then
     raise exception 'Each line needs a size (S, M, L or XL) and a quantity from 1 to 20' using errcode = '22023';
   end if;
   return res;
@@ -406,6 +445,19 @@ select cron.unschedule(jobid) from cron.job where jobname = 'resinate-payment-re
 select cron.schedule('resinate-payment-reminders', '0 23 * * *',
   $$select net.http_post(url := 'https://sazvjlufjofbnrsmtlhp.supabase.co/functions/v1/payment-reminders', body := '{}'::jsonb, timeout_milliseconds := 30000)$$);
 
+-- makers-only settings (the printer's email): unlike resinate_settings, nobody else can read these
+create table if not exists public.resinate_private (
+  id text primary key,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.resinate_private enable row level security;
+revoke all on public.resinate_private from anon, authenticated;
+grant select, insert, update, delete on public.resinate_private to authenticated;
+drop policy if exists "makers only" on public.resinate_private;
+create policy "makers only" on public.resinate_private for all to authenticated
+  using ((select private.resinate_role()) = 'maker') with check ((select private.resinate_role()) = 'maker');
+
 -- live updates: the dashboard hears new and changed orders (row-level security still decides who sees them)
 do $$
 begin
@@ -438,7 +490,7 @@ create policy "makers remove" on public.resinate_photos for delete to authentica
 -- the bucket is public, so anyone can view a photo by its link. Makers manage gallery files;
 -- everyone manages their own profile photo under avatars/<account id>/.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('resinate', 'resinate', true, 10485760, array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic'])
+values ('resinate', 'resinate', true, 10485760, array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'application/pdf'])
 on conflict (id) do update set public = true, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 drop policy if exists "resinate editors upload" on storage.objects;
 drop policy if exists "resinate editors read" on storage.objects;

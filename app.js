@@ -13,7 +13,10 @@
     print:{S:199,M:199,L:299,XL:299},
     theme:{S:99,M:99,L:199,XL:199},
     dye:99, sparkleLo:100, sparkleHi:149, sparkleXL:null,
-    led:{L:449,XL:399}, customMin:200, bundleOff:0,
+    led:{L:449,XL:399}, customMin:200,
+    // full mod bundle: 4+ add-ons on one piece cost this range instead (never more than adding them separately)
+    bundleLo:{S:450,M:550,L:650,XL:650}, bundleHi:{S:550,M:660,L:700,XL:700},
+    earPrint:50, earLate:100, comboPct:10,
     earPremade:200, earDiy:350
   };
   var P = JSON.parse(JSON.stringify(DEFAULT_PRICES));
@@ -34,8 +37,8 @@
   function mergePrices(d){
     var out = JSON.parse(JSON.stringify(DEFAULT_PRICES));
     if(!d) return out;
-    ["base","print","theme","led"].forEach(function(g){ if(d[g]) for(var k in out[g]) if(typeof d[g][k]==="number") out[g][k]=d[g][k]; });
-    ["dye","sparkleLo","sparkleHi","customMin","bundleOff","earPremade","earDiy"].forEach(function(k){ if(typeof d[k]==="number") out[k]=d[k]; });
+    ["base","print","theme","led","bundleLo","bundleHi"].forEach(function(g){ if(d[g]) for(var k in out[g]) if(typeof d[g][k]==="number") out[g][k]=d[g][k]; });
+    ["dye","sparkleLo","sparkleHi","customMin","earPremade","earDiy","earPrint","earLate","comboPct"].forEach(function(k){ if(typeof d[k]==="number") out[k]=d[k]; });
     out.sparkleXL = typeof d.sparkleXL==="number" ? d.sparkleXL : null;
     return out;
   }
@@ -78,7 +81,7 @@
     state.palette = state.palette.filter(function(c){ return COLOURS.some(function(x){ return x[0]===c; }); }).slice(0,MAX_COLOURS);
     if(!state.palette.length) state.palette = ["Clear"];
     state.colours = state.palette.length;
-    if(d && Array.isArray(d.cart)) cart = d.cart.filter(function(it){ return it && P.base[it.size]!=null; });
+    if(d && Array.isArray(d.cart)) cart = d.cart.filter(function(it){ return it && (it.kind==="earrings" || P.base[it.size]!=null); });
   }catch(e){}
   function saveDraft(){ try{ localStorage.setItem("resinate-draft", JSON.stringify({state:state, cart:cart})); }catch(e){} }
 
@@ -102,14 +105,25 @@
       '<tr><td><b>Colour dye</b><span class="sub">Charged when you pick 2 or more colours. One colour is included.</span></td>'+cells(function(){return '<td class="p">'+money(P.dye)+'</td>'})+'</tr>'+
       '<tr><td><b>Sparkle</b><span class="sub">Glitter, mica or flakes. Price depends on how much you want.</span></td>'+cells(function(k){var r=sparkleRange(k); return r?'<td class="p">'+range(r[0],r[1])+'</td>':'<td class="p ask">Ask us</td>'})+'</tr>'+
       '<tr><td><b>Custom inclusions</b><span class="sub">Crystals, scenery, or a theme like sand for a wave or leaves for a nature piece. We quote each one.</span></td>'+cells(function(){return '<td class="p">from '+short(P.customMin)+'</td>'})+'</tr>';
-    $("bundleBox").innerHTML = P.bundleOff>0
-      ? '<span class="pill ok">Bundle deal</span><div style="min-width:0;flex:1 1 260px"><strong>Save '+money(P.bundleOff)+' on the full modification bundle</strong><p>Add your own design, 2 or more colours and sparkle to one piece and the discount comes off automatically.</p></div>'
-      : '<span class="pill warn">Coming soon</span><div style="min-width:0;flex:1 1 260px"><strong>Full modification bundle</strong><p>Your own design, colour dye and sparkle together will cost less than adding each one. Bundle prices are on the way; ask us at the stall.</p></div>';
+    var bl = P.bundleLo, bh = P.bundleHi;
+    $("bundleBox").innerHTML = '<span class="pill ok">Bundle deal</span><div style="min-width:0;flex:1 1 260px"><strong>Full mod bundle</strong>'+
+      '<p>Choose '+BUNDLE_MODS+' or more add-ons for one piece (a design, a second colour, sparkle, a custom inclusion) and they cost one bundle price: '+
+      '<b>Small '+range(bl.S,bh.S)+'</b> · <b>Medium '+range(bl.M,bh.M)+'</b> · <b>Large '+range(bl.L,bh.L)+'</b> · <b>XL '+range(bl.XL,bh.XL)+'</b>. '+
+      'It comes off automatically, and never costs more than adding them one by one.</p></div>';
     $("cCustom").textContent = "from "+short(P.customMin);
   }
 
   // ---- quoting ----
+  var BUNDLE_MODS = 4;
+  function modCount(it){
+    return (it.print || (it.theme && findDesign(it.theme)) ? 1 : 0) + (it.colours>=2 ? 1 : 0) + (it.sparkle ? 1 : 0) + (it.custom ? 1 : 0);
+  }
   function quoteItem(it){
+    if(it.kind==="earrings"){
+      var el = [{label:"Premade earrings (pair)", lo:P.earPremade, hi:P.earPremade}];
+      if(it.print) el.push({label:"Custom print", lo:P.earPrint, hi:P.earPrint});
+      return {lines:el, lo:el.reduce(function(a,x){return a+x.lo},0), hi:el.reduce(function(a,x){return a+x.hi},0), open:[]};
+    }
     var lines = [{label:sizeName(it.size)+" piece ("+volText(it.size)+")", lo:P.base[it.size], hi:P.base[it.size]}];
     var open = [];
     var free = themeColoursFree(it);
@@ -124,18 +138,40 @@
     var l = ledPrice(it.size);
     if(it.led && l) lines.push({label:"LED light", lo:l, hi:l});
     if(it.custom){ lines.push({label:"Custom inclusion", lo:P.customMin, hi:P.customMin, text:"from "+short(P.customMin)}); open.push("custom inclusion"); }
-    if(P.bundleOff>0 && it.print && it.colours>=2 && it.sparkle) lines.push({label:"Bundle discount", lo:-P.bundleOff, hi:-P.bundleOff});
+    // full mod bundle: with 4+ add-ons, the add-ons cost the bundle range for the size, if that's cheaper (same rule in setup.sql)
+    var mods = modCount(it);
+    if(mods>=BUNDLE_MODS){
+      var aLo=0, aHi=0;
+      lines.slice(1).forEach(function(x){ if(x.lo!=null){ aLo+=x.lo; aHi+=x.hi; } });
+      var dLo = Math.min(aLo, P.bundleLo[it.size]) - aLo, dHi = Math.min(aHi, P.bundleHi[it.size]) - aHi;
+      if(dLo<0 || dHi<0){
+        var s1 = -dLo, s2 = -dHi;
+        lines.push({label:"Full mod bundle ("+mods+" add-ons)", lo:dLo, hi:dHi, text:"−"+(s1===s2 ? money(s1) : range(Math.min(s1,s2),Math.max(s1,s2)))});
+      }
+    }
     var lo=0, hi=0;
     lines.forEach(function(x){ if(x.lo!=null){ lo+=x.lo; hi+=x.hi; } });
     return {lines:lines, lo:lo, hi:hi, open:open};
   }
+  // whole-order extras (same rules in setup.sql): a resin piece + earrings together is comboPct% off;
+  // an earring print requested after Friday (Saturday or Sunday in Sydney) adds the late fee once
+  function sydneyWeekend(){ try{ var d = new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Sydney",weekday:"short"}).format(new Date()); return d==="Sat"||d==="Sun"; }catch(e){ var g=new Date().getDay(); return g===0||g===6; } }
   function quoteCart(items){
-    var lo=0, hi=0, open=[];
-    items.forEach(function(it){ var q=quoteItem(it), n=it.qty||1; lo+=q.lo*n; hi+=q.hi*n; q.open.forEach(function(o){ if(open.indexOf(o)<0) open.push(o); }); });
-    return {lo:lo, hi:hi, open:open};
+    var lo=0, hi=0, open=[], piece=false, ear=false, print=false;
+    items.forEach(function(it){
+      var q=quoteItem(it), n=it.qty||1; lo+=q.lo*n; hi+=q.hi*n;
+      if(it.kind==="earrings"){ ear=true; if(it.print) print=true; } else piece=true;
+      q.open.forEach(function(o){ if(open.indexOf(o)<0) open.push(o); });
+    });
+    var combo = (piece && ear && P.comboPct>0) ? [Math.round(lo*P.comboPct/100), Math.round(hi*P.comboPct/100)] : null;
+    if(combo){ lo -= combo[0]; hi -= combo[1]; }
+    var late = (print && sydneyWeekend()) ? P.earLate : 0;
+    lo += late; hi += late;
+    return {lo:lo, hi:hi, open:open, combo:combo, late:late};
   }
   function est(q){ return (q.open.length?"from ":"")+range(q.lo,q.hi); }
   function itemSpec(it){
+    if(it.kind==="earrings") return "Premade earrings"+(it.print ? " · custom print ("+(it.printSize||"size to confirm")+", "+(it.printColour==="bw"?"black and white":"colour")+")"+(it.art?" (file attached)":" (file to send)") : "");
     var bits = [sizeName(it.size)];
     if(it.theme) bits.push(it.theme+" design");
     if(it.print) bits.push("own design"+(it.artText?' "'+it.artText+'"':"")+(it.art?" (picture attached)":"")+(it.artNote?": "+it.artNote:""));
@@ -183,6 +219,55 @@
     if(d && d.palette.length){ state.palette = d.palette.slice(); state.colours = state.palette.length; }
     renderBuilder(); saveDraft();
   }
+
+  // ---- earrings pre-order (premade pairs, optional custom print from a PDF or JPEG) ----
+  var ear = {qty:1, print:false, art:"", fileName:""};
+  function renderEarForm(){
+    $("earQty").textContent = ear.qty; $("earMinus").disabled = ear.qty<=1; $("earPlus").disabled = ear.qty>=20;
+    $("earEach").textContent = short(P.earPremade)+" a pair";
+    $("cEarPrint").textContent = "+"+money(P.earPrint);
+    $("earLateAmt").textContent = short(P.earLate);
+    $("comboPct").textContent = P.comboPct;
+    $("earPrint").checked = ear.print; $("earPrintBox").hidden = !ear.print;
+    var signedIn = !!(sb && session);
+    $("earPick").hidden = !signedIn;
+    $("earPick").textContent = ear.art ? "Change file" : "Upload your file";
+    $("earFileRm").hidden = !ear.art; $("earFileName").textContent = ear.art ? ear.fileName : "";
+    if(!signedIn) $("earFileMsg").innerHTML = 'To upload your file, <a href="#signin">sign in</a> first (it\'s free).';
+    else if(!$("earFileMsg").dataset.busy) $("earFileMsg").textContent = ear.art ? "Your file is saved with this order." : "PDF or JPEG, up to 10 MB.";
+    var each = P.earPremade + (ear.print ? P.earPrint : 0);
+    $("earTotal").textContent = money(each*ear.qty)+(ear.print && sydneyWeekend() ? " + "+money(P.earLate)+" late fee" : "");
+  }
+  $("earMinus").addEventListener("click", function(){ ear.qty = Math.max(1, ear.qty-1); renderEarForm(); });
+  $("earPlus").addEventListener("click", function(){ ear.qty = Math.min(20, ear.qty+1); renderEarForm(); });
+  $("earPrint").addEventListener("change", function(){ ear.print = this.checked; renderEarForm(); });
+  $("earFileRm").addEventListener("click", function(){ ear.art = ""; ear.fileName = ""; renderEarForm(); });
+  $("earFile").addEventListener("change", function(){
+    var f = this.files[0]; this.value = ""; if(!f || !session) return;
+    var pdf = f.type==="application/pdf" || /\.pdf$/i.test(f.name), jpg = f.type==="image/jpeg" || /\.jpe?g$/i.test(f.name);
+    if(!pdf && !jpg){ $("earFileMsg").textContent = "Please send a PDF or a JPEG file."; return; }
+    if(f.size > 10*1024*1024){ $("earFileMsg").textContent = "That file is over 10 MB. Please send a smaller one."; return; }
+    // sent as it is, never shrunk, so the print stays sharp
+    var path = "designs/"+session.user.id+"/"+randName()+(pdf ? ".pdf" : ".jpg");
+    $("earFileMsg").dataset.busy = "1"; $("earFileMsg").textContent = "Uploading your file…";
+    sb.storage.from("resinate").upload(path, f, {contentType: pdf ? "application/pdf" : "image/jpeg", upsert:false}).then(function(r){
+      delete $("earFileMsg").dataset.busy;
+      if(r.error) throw r.error;
+      ear.art = path; ear.fileName = f.name.slice(0,60); renderEarForm();
+    }).catch(function(err){ delete $("earFileMsg").dataset.busy; $("earFileMsg").textContent = "Your file didn't upload ("+errText(err)+")."; });
+  });
+  $("earForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var size = $("earSize").value.trim();
+    if(ear.print && !ear.art){ showMsg("earMsg","err", session ? "Upload your print file (PDF or JPEG) first." : "Sign in and upload your print file (PDF or JPEG) first."); return; }
+    if(ear.print && !size){ showMsg("earMsg","err","Add the printing size, like 1.5 cm × 1.5 cm."); $("earSize").focus(); return; }
+    cart.push({kind:"earrings", qty:ear.qty, print:ear.print, art:ear.print?ear.art:"", printSize:ear.print?size:"", printColour:ear.print?$("earColour").value:"colour"});
+    saveDraft(); renderCart();
+    var n = cart.reduce(function(a,x){return a+(x.qty||1)},0);
+    showMsg("earMsg","ok","Added to your order. "+n+(n===1?" item":" items")+" so far: go to Pre-order to check out.");
+    toast("Earrings added to your order");
+    ear = {qty:1, print:false, art:"", fileName:""}; $("earSize").value = ""; renderEarForm();
+  });
 
   // ---- the designer: a customer's own picture and words, shown on the preview ----
   var ART_RE = /^designs\/[0-9a-f-]{36}\/[A-Za-z0-9_.-]{1,80}$/;
@@ -259,7 +344,9 @@
     var note = [];
     if(q.lo!==q.hi) note.push("Sparkle price depends on how much you add.");
     if(q.open.length) note.push("We'll confirm the price of your "+q.open.join(" and ")+" before you pay.");
-    if(!(P.bundleOff>0) && st.print && st.colours>=2 && st.sparkle) note.push("This qualifies for the full modification bundle, which will cost less once it launches.");
+    var m = modCount(st);
+    if(m===BUNDLE_MODS-1) note.push("Add one more add-on to get the full mod bundle price.");
+    else if(m>=BUNDLE_MODS) note.push("Full mod bundle: your add-ons cost "+range(P.bundleLo[st.size],P.bundleHi[st.size])+" for this size.");
     $("totalNote").textContent = note.join(" ");
     $("addBtn").textContent = st.qty>1 ? "Add "+st.qty+" to order" : "Add to order";
     drawPreview(st);
@@ -327,7 +414,7 @@
   function renderCart(){
     var n = cart.reduce(function(a,it){return a+(it.qty||1)},0);
     $("cartBadge").hidden = !n; $("cartBadge").textContent = n;
-    $("cbCount").textContent = n+(n===1?" piece":" pieces");
+    $("cbCount").textContent = n+(n===1?" item":" items");
     $("cbTotal").textContent = n ? est(quoteCart(cart)) : "";
     syncCartBar();
     if(!cart.length){
@@ -337,13 +424,16 @@
     $("cart").innerHTML = cart.map(function(it,i){
       var iq = quoteItem(it), n2 = it.qty||1;
       return '<div class="citem"><span class="spec">'+(n2>1?'<b>'+n2+' ×</b> ':'')+esc(itemSpec(it))+'</span><span class="amt">'+esc(est({lo:iq.lo*n2,hi:iq.hi*n2,open:iq.open}))+'</span><button type="button" data-rm="'+i+'" aria-label="Remove '+esc(itemSpec(it))+'">Remove</button></div>';
-    }).join("")+'<div class="ctotal"><span>Estimated total</span><span>'+esc(est(quoteCart(cart)))+'</span></div>';
+    }).join("")+(function(){ var qc = quoteCart(cart), x = "";
+      if(qc.combo) x += '<div class="ctotal sub"><span>Piece + earrings deal ('+P.comboPct+'% off)</span><span>−'+esc(range(qc.combo[0],qc.combo[1]))+'</span></div>';
+      if(qc.late) x += '<div class="ctotal sub"><span>Late fee (print requested after Friday)</span><span>'+esc(money(qc.late))+'</span></div>';
+      return x; })()+'<div class="ctotal"><span>Estimated total</span><span>'+esc(est(quoteCart(cart)))+'</span></div>';
   }
   function cartText(){
     return cart.map(function(it){ var iq=quoteItem(it), n=it.qty||1; return "• "+(n>1?n+" × ":"")+itemSpec(it)+" — "+est({lo:iq.lo*n,hi:iq.hi*n,open:iq.open}); }).join("\n")+"\nEstimate: "+est(quoteCart(cart));
   }
 
-  function renderAll(){ renderPriceDisplays(); renderDesignList(); renderBuilder(); renderCart(); $("factDesigns").textContent = designs.length; }
+  function renderAll(){ renderPriceDisplays(); renderDesignList(); renderBuilder(); renderEarForm(); renderCart(); $("factDesigns").textContent = designs.length; }
 
   // the phone checkout bar shows while there's something in the order and the checkout isn't on screen
   var checkoutSeen = false, builderSeen = false, receiptSeen = false;
@@ -660,6 +750,7 @@
     $("settingsSec").hidden = !canEdit;
     $("pricesSec").hidden = !canEdit;
     $("designsSec").hidden = !canEdit;
+    $("printSec").hidden = !canEdit;
     $("upForm").hidden = !canEdit;
     renderGallery(); renderStart();
   }
@@ -704,11 +795,11 @@
       if(!canSave){ orders = []; }
       applyAccess(); fillSettings(); fillPrices();
       loadProfile();
-      renderOwnBox();
+      renderOwnBox(); renderEarForm();
       if(session){ $("siCodeForm").hidden = true; $("siEmailForm").hidden = false; $("siMsg").hidden = true; }
       if(session && document.body.getAttribute("data-view")==="signin") location.replace("#profile");
       liveOrders(canSave);
-      if(canSave){ loadOrders(); loadMessages(); } else { messages = []; renderMessages(); }
+      if(canSave){ loadOrders(); loadMessages(); loadPrinting(); } else { messages = []; renderMessages(); }
     });
   }
 
@@ -1043,13 +1134,40 @@
     renderOrders();
   }
 
+  // ---- printing (Sap): a makers-only email, kept in resinate_private ----
+  var printEmail = "";
+  function printMail(o){
+    var lines = itemsOf(o).filter(function(it){ return it.kind==="earrings" && it.print; }).map(function(it){
+      return "- "+(it.qty||1)+" pair(s), size "+(it.printSize||"to confirm")+", "+(it.printColour==="bw"?"black and white":"colour")+(it.art&&ART_RE.test(it.art) ? "\n  File: "+photoUrl(it.art) : "\n  File: not uploaded yet");
+    });
+    return "mailto:"+encodeURIComponent(printEmail)+"?subject="+encodeURIComponent("Resinate print request "+o.ref)+"&body="+encodeURIComponent("Hi Sap,\n\nPrint request for order "+o.ref+" ("+o.name+"):\n"+lines.join("\n")+"\n\nThanks!");
+  }
+  function loadPrinting(){
+    if(!sb || !canSave) return;
+    sb.from("resinate_private").select("data").eq("id","printing").maybeSingle().then(function(r){
+      if(!r.error && r.data && r.data.data) printEmail = r.data.data.email || "";
+      $("prEmail").value = printEmail; if(orders.length) renderOrders();
+    });
+  }
+  $("printForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var em = $("prEmail").value.trim();
+    if(em && !/^\S+@\S+\.\S+$/.test(em)){ showMsg("prMsg","err","That doesn't look like an email address."); return; }
+    sb.from("resinate_private").upsert({id:"printing", data:{email:em}, updated_at:new Date().toISOString()}).then(function(r){
+      if(r.error) throw r.error;
+      printEmail = em; showMsg("prMsg","ok", em ? "Saved. Print requests can now be emailed to Sap." : "Saved."); if(orders.length) renderOrders();
+    }).catch(function(err){ showMsg("prMsg","err","Didn't save ("+errText(err)+")."); });
+  });
+
   function renderToMake(){
-    var c = {S:0,M:0,L:0,XL:0,print:0,sparkle:0,led:0,custom:0};
+    var c = {S:0,M:0,L:0,XL:0,print:0,sparkle:0,led:0,custom:0,ear:0,earPrint:0};
     orders.forEach(function(o){
       if(["New","Confirmed","Making"].indexOf(o.status)<0) return;
-      itemsOf(o).forEach(function(it){ var n=it.qty||1; c[it.size]=(c[it.size]||0)+n; if(it.print) c.print+=n; if(it.sparkle) c.sparkle+=n; if(it.led) c.led+=n; if(it.custom) c.custom+=n; });
+      itemsOf(o).forEach(function(it){ var n=it.qty||1;
+        if(it.kind==="earrings"){ c.ear+=n; if(it.print) c.earPrint+=n; return; }
+        c[it.size]=(c[it.size]||0)+n; if(it.print) c.print+=n; if(it.sparkle) c.sparkle+=n; if(it.led) c.led+=n; if(it.custom) c.custom+=n; });
     });
-    $("makegrid").innerHTML = [["S","Small"],["M","Medium"],["L","Large"],["XL","XL"],["print","Own designs"],["sparkle","With sparkle"],["custom","Custom inclusions"]].map(function(x){
+    $("makegrid").innerHTML = [["S","Small"],["M","Medium"],["L","Large"],["XL","XL"],["print","Own designs"],["sparkle","With sparkle"],["custom","Custom inclusions"],["ear","Earring pairs"],["earPrint","Earring prints"]].map(function(x){
       return '<div><b>'+c[x[0]]+'</b><span>'+x[1]+'</span></div>';
     }).join("");
   }
@@ -1088,7 +1206,11 @@
         '<div style="min-width:0"><div class="ref">'+id+(when?' · '+when:'')+' · '+esc(o.status)+(o.source==="online"?' · online':'')+'</div>'+
         '<div class="who">'+esc(o.name)+' <span class="spec">· '+esc(o.contact)+'</span></div>'+
         '<div class="spec">'+esc(orderSpec(o))+'</div>'+
-        itemsOf(o).filter(function(it){ return it.art && ART_RE.test(it.art); }).map(function(it){ return '<a class="artlink" href="'+esc(photoUrl(it.art))+'" target="_blank" rel="noopener"><img src="'+esc(photoUrl(it.art))+'" alt="Customer picture" loading="lazy"> Open picture</a>'; }).join("")+
+        itemsOf(o).filter(function(it){ return it.art && ART_RE.test(it.art); }).map(function(it){
+          var u = photoUrl(it.art), pdf = /\.pdf$/i.test(it.art);
+          return '<a class="artlink" href="'+esc(u)+'" target="_blank" rel="noopener">'+(pdf ? '' : '<img src="'+esc(u)+'" alt="Customer picture" loading="lazy"> ')+(pdf ? 'Open PDF' : 'Open picture')+'</a>'; }).join("")+
+        (itemsOf(o).some(function(it){ return it.kind==="earrings" && it.print; })
+          ? (printEmail ? '<a class="btn small ghost" style="margin-top:6px" href="'+esc(printMail(o))+'">Email to printer</a>' : '<div class="spec">Add the printer\'s email under Printing to send this print request.</div>') : '')+
         (o.notes?'<div class="spec">Notes: '+esc(o.notes)+'</div>':'')+
         '<div class="spec">'+esc(o.pickup||"")+'</div></div>'+
         '<div class="money">'+priceLine+'<span class="pill '+ps.k+'">'+ps.t+'</span>'+(paid?'<span class="spec">'+money(paid)+' paid</span>':'')+'</div>'+
@@ -1250,7 +1372,9 @@
     ["ppS",["print","S"]],["ppM",["print","M"]],["ppL",["print","L"]],["ppXL",["print","XL"]],
     ["ptS",["theme","S"]],["ptM",["theme","M"]],["ptL",["theme","L"]],["ptXL",["theme","XL"]],
     ["pDye",["dye"]],["pSpLo",["sparkleLo"]],["pSpHi",["sparkleHi"]],["pSpXL",["sparkleXL"]],
-    ["pEarPre",["earPremade"]],["pEarDiy",["earDiy"]],["pCustom",["customMin"]],["pBundle",["bundleOff"]]];
+    ["pEarPre",["earPremade"]],["pEarDiy",["earDiy"]],["pEarPrint",["earPrint"]],["pEarLate",["earLate"]],["pCustom",["customMin"]],
+    ["pbuSlo",["bundleLo","S"]],["pbuShi",["bundleHi","S"]],["pbuMlo",["bundleLo","M"]],["pbuMhi",["bundleHi","M"]],
+    ["pbuLlo",["bundleLo","L"]],["pbuLhi",["bundleHi","L"]],["pbuXlo",["bundleLo","XL"]],["pbuXhi",["bundleHi","XL"]]];
   function getPath(o,p){ return p.length===1 ? o[p[0]] : o[p[0]][p[1]]; }
   function fillPrices(){ PRICE_FIELDS.forEach(function(f){ var v=getPath(P,f[1]); $(f[0]).value = v==null ? "" : (v/100).toFixed(2); }); }
   $("priceReset").addEventListener("click", function(){ fillPrices(); $("priceMsg").hidden = true; });
@@ -1260,11 +1384,12 @@
     PRICE_FIELDS.forEach(function(f){
       var raw = $(f[0]).value.trim(), c = cents(raw), p = f[1];
       if(f[0]==="pSpXL" && raw===""){ out.sparkleXL = null; return; }
-      if(f[0]==="pBundle" && raw===""){ out.bundleOff = 0; return; }
       if(!(c>=0)){ bad = bad || f[0]; return; }
       if(p.length===1) out[p[0]] = c; else out[p[0]][p[1]] = c;
     });
     if(bad){ showMsg("priceMsg","err","One of the prices isn't a number. Use dollars, like 9.99."); $(bad).focus(); return; }
+    var badB = ["S","M","L","XL"].filter(function(k){ return out.bundleHi[k] < out.bundleLo[k]; })[0];
+    if(badB){ showMsg("priceMsg","err","Bundle \"to\" must be at least the \"from\" price for "+sizeName(badB)+"."); return; }
     if(out.sparkleHi < out.sparkleLo){ showMsg("priceMsg","err","Sparkle \"up to\" must be at least the \"from\" price."); $("pSpHi").focus(); return; }
     sb.from("resinate_settings").upsert({id:"prices", data:out, updated_at:new Date().toISOString()}).then(function(r){
       if(r.error) throw r.error;
