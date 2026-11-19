@@ -12,7 +12,7 @@ The website for **Resinate**, a small handmade resin studio: epoxy and UV resin 
   - **Profile:** photo (cropped to a square on the device), name, contact for orders, and every order placed while signed in, with its progress and what's left to pay.
   - **Settings:** theme (system, light or dark), a still version of the home-page animation, filling in your details at checkout, remembering orders on the device, clearing the device, signing out (here or everywhere), and deleting the account.
 - **Resin earrings:** premade pairs ($2) can be pre-ordered online, optionally with a custom print (+$0.50) from an uploaded PDF or JPEG with its printing size and colour; print requests made after Friday (Saturday or Sunday, Sydney time) add a $1 late fee. Make-your-own pairs ($3.50) are at the stall only. An order with a resin piece and earrings is 10% off. Makers email print requests to the printer (Sap) from the dashboard; his email is kept in the makers-only `resinate_private` table.
-- **Full mod bundle:** a piece with 4 or more add-ons pays the bundle range for its size instead (Small $4.50–5.50, Medium $5.50–6.60, Large and XL $6.50–7.00), never more than the add-ons separately.
+- **Full mod bundle:** a piece with 4 or more add-ons pays the bundle range for its size instead (Small $5, Medium $6, Large and XL $7), never more than the add-ons separately.
 - **Pre-orders:** every order is a pre-order; pieces are poured after they're ordered.
 - **Privacy & regulations** (`#policies`): all profit goes to charity, refunds within 7 days of buying (on top of Australian Consumer Law rights), and the privacy policy.
 - **Maker dashboard** (`#dashboard`), only for accounts with the `maker` role:

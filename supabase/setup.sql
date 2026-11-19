@@ -129,11 +129,10 @@ create or replace function private.resinate_prices() returns jsonb language sql 
   def as (select '{"base":{"S":599,"M":999,"L":1399,"XL":1999},"print":{"S":199,"M":199,"L":299,"XL":299},
                    "theme":{"S":99,"M":99,"L":199,"XL":199},"dye":99,"sparkleLo":100,"sparkleHi":149,"sparkleXL":null,"led":{"L":449,"XL":399},
                    "customMin":200,
-                   "bundleLo":{"S":450,"M":550,"L":650,"XL":650},"bundleHi":{"S":550,"M":660,"L":700,"XL":700},
+                   "bundle":{"S":500,"M":600,"L":700,"XL":700},
                    "earPremade":200,"earPrint":50,"earLate":100,"comboPct":10}'::jsonb as d)
-  select def.d || (s.d - 'base' - 'print' - 'theme' - 'led' - 'bundleLo' - 'bundleHi') || jsonb_build_object(
-    'bundleLo', (def.d -> 'bundleLo') || coalesce(s.d -> 'bundleLo', '{}'::jsonb),
-    'bundleHi', (def.d -> 'bundleHi') || coalesce(s.d -> 'bundleHi', '{}'::jsonb),
+  select def.d || (s.d - 'base' - 'print' - 'theme' - 'led' - 'bundle') || jsonb_build_object(
+    'bundle', (def.d -> 'bundle') || coalesce(s.d -> 'bundle', '{}'::jsonb),
     'base',  (def.d -> 'base')  || coalesce(s.d -> 'base',  '{}'::jsonb),
     'print', (def.d -> 'print') || coalesce(s.d -> 'print', '{}'::jsonb),
     'theme', (def.d -> 'theme') || coalesce(s.d -> 'theme', '{}'::jsonb),
@@ -152,7 +151,7 @@ language plpgsql stable security definer set search_path = '' as $$
 declare
   p jsonb := private.resinate_prices();
   ds jsonb := private.resinate_designs();
-  it jsonb; sz text; q int; lo int; hi int; v int; theme_ok boolean; dye_free boolean; mods int;
+  it jsonb; sz text; q int; lo int; hi int; v int; theme_ok boolean; dye_free boolean; mods int; item_open boolean;
   has_piece boolean := false; has_ear boolean := false; ear_print boolean := false;
 begin
   low := 0; high := 0; is_open := false;
@@ -168,7 +167,7 @@ begin
       continue;
     end if;
     has_piece := true;
-    lo := 0; hi := 0;  -- add-ons first; the base price is added at the end
+    lo := 0; hi := 0; item_open := false;  -- add-ons first; the base price is added at the end
     if (it ->> 'print')::boolean then v := (p -> 'print' ->> sz)::int; lo := lo + v; hi := hi + v; end if;
     -- a themed design has its own price, which includes its colours; other colours bring back the dye charge
     theme_ok := not coalesce((it ->> 'print')::boolean, false) and coalesce(it ->> 'theme', '') <> ''
@@ -183,7 +182,7 @@ begin
       if sz = 'XL' then
         if jsonb_typeof(p -> 'sparkleXL') = 'number' and (p ->> 'sparkleXL')::int > 0 then
           v := (p ->> 'sparkleXL')::int; lo := lo + v; hi := hi + v;
-        else is_open := true; end if;
+        else item_open := true; end if;
       else
         lo := lo + (p ->> 'sparkleLo')::int; hi := hi + (p ->> 'sparkleHi')::int;
       end if;
@@ -191,16 +190,20 @@ begin
     if (it ->> 'led')::boolean and sz in ('L', 'XL') then
       v := coalesce((p -> 'led' ->> sz)::int, 0); lo := lo + v; hi := hi + v;
     end if;
-    if (it ->> 'custom')::boolean then v := (p ->> 'customMin')::int; lo := lo + v; hi := hi + v; is_open := true; end if;
-    -- full mod bundle: with 4+ add-ons, the add-ons cost the bundle range for the size, if that's cheaper
+    if (it ->> 'custom')::boolean then v := (p ->> 'customMin')::int; lo := lo + v; hi := hi + v; end if;
+    -- full mod bundle: with 4+ add-ons, the add-ons cost the bundle price for the size, if that's cheaper
     mods := (case when coalesce((it ->> 'print')::boolean, false) or theme_ok then 1 else 0 end)
           + (case when (it ->> 'colours')::int >= 2 then 1 else 0 end)
           + (case when coalesce((it ->> 'sparkle')::boolean, false) then 1 else 0 end)
           + (case when coalesce((it ->> 'custom')::boolean, false) then 1 else 0 end);
     if mods >= 4 then
-      lo := least(lo, (p -> 'bundleLo' ->> sz)::int);
-      hi := least(hi, (p -> 'bundleHi' ->> sz)::int);
+      -- one flat price for the add-ons: the bundle, or their top price if that's lower
+      hi := least(hi, (p -> 'bundle' ->> sz)::int);
+      lo := hi;
+    elsif coalesce((it ->> 'custom')::boolean, false) then
+      item_open := true;  -- a custom inclusion outside the bundle is quoted
     end if;
+    if item_open then is_open := true; end if;
     lo := lo + (p -> 'base' ->> sz)::int; hi := hi + (p -> 'base' ->> sz)::int;
     low := low + lo * q; high := high + hi * q;
   end loop;

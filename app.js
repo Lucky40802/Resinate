@@ -14,8 +14,8 @@
     theme:{S:99,M:99,L:199,XL:199},
     dye:99, sparkleLo:100, sparkleHi:149, sparkleXL:null,
     led:{L:449,XL:399}, customMin:200,
-    // full mod bundle: 4+ add-ons on one piece cost this range instead (never more than adding them separately)
-    bundleLo:{S:450,M:550,L:650,XL:650}, bundleHi:{S:550,M:660,L:700,XL:700},
+    // full mod bundle: 4+ add-ons on one piece cost this instead (never more than adding them separately)
+    bundle:{S:500,M:600,L:700,XL:700},
     earPrint:50, earLate:100, comboPct:10,
     earPremade:200, earDiy:350
   };
@@ -37,7 +37,7 @@
   function mergePrices(d){
     var out = JSON.parse(JSON.stringify(DEFAULT_PRICES));
     if(!d) return out;
-    ["base","print","theme","led","bundleLo","bundleHi"].forEach(function(g){ if(d[g]) for(var k in out[g]) if(typeof d[g][k]==="number") out[g][k]=d[g][k]; });
+    ["base","print","theme","led","bundle"].forEach(function(g){ if(d[g]) for(var k in out[g]) if(typeof d[g][k]==="number") out[g][k]=d[g][k]; });
     ["dye","sparkleLo","sparkleHi","customMin","earPremade","earDiy","earPrint","earLate","comboPct"].forEach(function(k){ if(typeof d[k]==="number") out[k]=d[k]; });
     out.sparkleXL = typeof d.sparkleXL==="number" ? d.sparkleXL : null;
     return out;
@@ -105,10 +105,10 @@
       '<tr><td><b>Colour dye</b><span class="sub">Charged when you pick 2 or more colours. One colour is included.</span></td>'+cells(function(){return '<td class="p">'+money(P.dye)+'</td>'})+'</tr>'+
       '<tr><td><b>Sparkle</b><span class="sub">Glitter, mica or flakes. Price depends on how much you want.</span></td>'+cells(function(k){var r=sparkleRange(k); return r?'<td class="p">'+range(r[0],r[1])+'</td>':'<td class="p ask">Ask us</td>'})+'</tr>'+
       '<tr><td><b>Custom inclusions</b><span class="sub">Crystals, scenery, or a theme like sand for a wave or leaves for a nature piece. We quote each one.</span></td>'+cells(function(){return '<td class="p">from '+short(P.customMin)+'</td>'})+'</tr>';
-    var bl = P.bundleLo, bh = P.bundleHi;
+    var bu = P.bundle;
     $("bundleBox").innerHTML = '<span class="pill ok">Bundle deal</span><div style="min-width:0;flex:1 1 260px"><strong>Full mod bundle</strong>'+
       '<p>Choose '+BUNDLE_MODS+' or more add-ons for one piece (a design, a second colour, sparkle, a custom inclusion) and they cost one bundle price: '+
-      '<b>Small '+range(bl.S,bh.S)+'</b> · <b>Medium '+range(bl.M,bh.M)+'</b> · <b>Large '+range(bl.L,bh.L)+'</b> · <b>XL '+range(bl.XL,bh.XL)+'</b>. '+
+      '<b>Small '+short(bu.S)+'</b> · <b>Medium '+short(bu.M)+'</b> · <b>Large '+short(bu.L)+'</b> · <b>XL '+short(bu.XL)+'</b>. '+
       'It comes off automatically, and never costs more than adding them one by one.</p></div>';
     $("cCustom").textContent = "from "+short(P.customMin);
   }
@@ -138,16 +138,16 @@
     var l = ledPrice(it.size);
     if(it.led && l) lines.push({label:"LED light", lo:l, hi:l});
     if(it.custom){ lines.push({label:"Custom inclusion", lo:P.customMin, hi:P.customMin, text:"from "+short(P.customMin)}); open.push("custom inclusion"); }
-    // full mod bundle: with 4+ add-ons, the add-ons cost the bundle range for the size, if that's cheaper (same rule in setup.sql)
+    // full mod bundle: with 4+ add-ons, the add-ons cost the bundle price for the size, if that's cheaper (same rule in setup.sql)
     var mods = modCount(it);
     if(mods>=BUNDLE_MODS){
       var aLo=0, aHi=0;
       lines.slice(1).forEach(function(x){ if(x.lo!=null){ aLo+=x.lo; aHi+=x.hi; } });
-      var dLo = Math.min(aLo, P.bundleLo[it.size]) - aLo, dHi = Math.min(aHi, P.bundleHi[it.size]) - aHi;
-      if(dLo<0 || dHi<0){
-        var s1 = -dLo, s2 = -dHi;
-        lines.push({label:"Full mod bundle ("+mods+" add-ons)", lo:dLo, hi:dHi, text:"−"+(s1===s2 ? money(s1) : range(Math.min(s1,s2),Math.max(s1,s2)))});
-      }
+      // one flat price for the add-ons: the bundle, or their top price if that's lower
+      var flat = Math.min(P.bundle[it.size], aHi);
+      lines.slice(1).forEach(function(x){ x.lo = null; x.hi = null; x.text = "In bundle"; });
+      lines.push({label:"Full mod bundle ("+mods+" add-ons)", lo:flat, hi:flat});
+      open = open.filter(function(o){ return o!=="custom inclusion"; }); // the bundle price covers it
     }
     var lo=0, hi=0;
     lines.forEach(function(x){ if(x.lo!=null){ lo+=x.lo; hi+=x.hi; } });
@@ -346,7 +346,7 @@
     if(q.open.length) note.push("We'll confirm the price of your "+q.open.join(" and ")+" before you pay.");
     var m = modCount(st);
     if(m===BUNDLE_MODS-1) note.push("Add one more add-on to get the full mod bundle price.");
-    else if(m>=BUNDLE_MODS) note.push("Full mod bundle: your add-ons cost "+range(P.bundleLo[st.size],P.bundleHi[st.size])+" for this size.");
+    else if(m>=BUNDLE_MODS) note.push("Full mod bundle: your add-ons cost "+short(P.bundle[st.size])+" for this size.");
     $("totalNote").textContent = note.join(" ");
     $("addBtn").textContent = st.qty>1 ? "Add "+st.qty+" to order" : "Add to order";
     drawPreview(st);
@@ -1373,8 +1373,7 @@
     ["ptS",["theme","S"]],["ptM",["theme","M"]],["ptL",["theme","L"]],["ptXL",["theme","XL"]],
     ["pDye",["dye"]],["pSpLo",["sparkleLo"]],["pSpHi",["sparkleHi"]],["pSpXL",["sparkleXL"]],
     ["pEarPre",["earPremade"]],["pEarDiy",["earDiy"]],["pEarPrint",["earPrint"]],["pEarLate",["earLate"]],["pCustom",["customMin"]],
-    ["pbuSlo",["bundleLo","S"]],["pbuShi",["bundleHi","S"]],["pbuMlo",["bundleLo","M"]],["pbuMhi",["bundleHi","M"]],
-    ["pbuLlo",["bundleLo","L"]],["pbuLhi",["bundleHi","L"]],["pbuXlo",["bundleLo","XL"]],["pbuXhi",["bundleHi","XL"]]];
+    ["pbuS",["bundle","S"]],["pbuM",["bundle","M"]],["pbuL",["bundle","L"]],["pbuX",["bundle","XL"]]];
   function getPath(o,p){ return p.length===1 ? o[p[0]] : o[p[0]][p[1]]; }
   function fillPrices(){ PRICE_FIELDS.forEach(function(f){ var v=getPath(P,f[1]); $(f[0]).value = v==null ? "" : (v/100).toFixed(2); }); }
   $("priceReset").addEventListener("click", function(){ fillPrices(); $("priceMsg").hidden = true; });
@@ -1388,8 +1387,6 @@
       if(p.length===1) out[p[0]] = c; else out[p[0]][p[1]] = c;
     });
     if(bad){ showMsg("priceMsg","err","One of the prices isn't a number. Use dollars, like 9.99."); $(bad).focus(); return; }
-    var badB = ["S","M","L","XL"].filter(function(k){ return out.bundleHi[k] < out.bundleLo[k]; })[0];
-    if(badB){ showMsg("priceMsg","err","Bundle \"to\" must be at least the \"from\" price for "+sizeName(badB)+"."); return; }
     if(out.sparkleHi < out.sparkleLo){ showMsg("priceMsg","err","Sparkle \"up to\" must be at least the \"from\" price."); $("pSpHi").focus(); return; }
     sb.from("resinate_settings").upsert({id:"prices", data:out, updated_at:new Date().toISOString()}).then(function(r){
       if(r.error) throw r.error;
